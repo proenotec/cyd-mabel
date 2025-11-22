@@ -24,11 +24,25 @@ Sistema de control de clima con pantalla táctil para ESP32-S3 con display LVGL.
 
 ## 🔧 Hardware
 
-- **Modelo**: WT32-SC01 PLUS
+Este proyecto soporta **DOS versiones** de pantallas CYD:
+
+### ✅ Versión Capacitiva (RECOMENDADA - Por Defecto)
+- **Modelo**: WT32-SC01 PLUS / JC2432W328
 - **MCU**: ESP32-S3 (ESP32-WROVER-B)
-- **Display**: 3.5" 320x480 LCD (ST7796UI driver)
-- **Touch**: Capacitivo FT6336U I2C
+- **Display**: 3.5" 320x480 ILI9342
+- **Touch**: Capacitivo CST816 I2C
 - **Memoria**: 4MB Flash + 8MB PSRAM
+- **Ventaja**: Touch más preciso y responsivo
+
+### 🔄 Versión Resistiva (Alternativa)
+- **Modelo**: ESP32-2432S028R (Cheap Yellow Display)
+- **MCU**: ESP32 (WROOM)
+- **Display**: 3.5" 320x480 ILI9342
+- **Touch**: Resistivo XPT2046 SPI
+- **Memoria**: 4MB Flash
+- **Ventaja**: Más económica
+
+> 📖 **Ver [HARDWARE.md](HARDWARE.md)** para comparación detallada y cómo cambiar entre versiones
 
 ## ⚡ Configuración Rápida
 
@@ -42,7 +56,25 @@ device_name: 'tu-dispositivo-nombre'
 friendly_name: 'Tu Dispositivo Nombre'
 ```
 
-### 2. Credenciales WiFi y API
+### 2. Selección de Hardware (Capacitiva/Resistiva)
+
+Editar `cyd-negro-lvgl-thermostats.yaml` en la **SECCIÓN 5** (aprox. línea 125):
+
+**Por defecto viene configurada para Capacitiva**. Si tienes la versión resistiva, cambiar:
+
+```yaml
+# Comentar estas líneas (versión capacitiva):
+# hardware_file: modules/hardware/JC2432W328_landscape.yaml
+# hardware_type: "Capacitive"
+
+# Descomentar estas líneas (versión resistiva):
+hardware_file: modules/hardware/2432S028R_landscape.yaml
+hardware_type: "Resistive"
+```
+
+> 📖 **¿No sabes cuál tienes?** Ver [HARDWARE.md](HARDWARE.md#identificar-tu-pantalla)
+
+### 3. Credenciales WiFi y API
 
 Crear/editar `secrets.yaml`:
 

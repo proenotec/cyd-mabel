@@ -123,7 +123,26 @@ substitutions:
   # cover_terrace_label: "TERRACE"
 
   # ╔══════════════════════════════════════════════════════════════════════════╗
-  # ║  SECCIÓN 5: CONFIGURACIÓN GENERAL DEL SISTEMA                            ║
+  # ║  SECCIÓN 5: SELECCIÓN DE HARDWARE (PANTALLA CYD)                         ║
+  # ╚══════════════════════════════════════════════════════════════════════════╝
+  #
+  # IMPORTANTE: Descomentar UNA de las dos opciones según tu hardware
+  #
+  # OPCIÓN A: Pantalla CYD CAPACITIVA (WT32-SC01 PLUS con FT6336U touch)
+  # - Touch capacitivo más preciso y responsivo
+  # - Archivo: JC2432W328_landscape.yaml
+  hardware_file: modules/hardware/JC2432W328_landscape.yaml
+  hardware_type: "Capacitive"  # Para referencia en logs
+
+  # OPCIÓN B: Pantalla CYD RESISTIVA (ESP32-2432S028R con XPT2046 touch)
+  # - Touch resistivo requiere presión
+  # - Archivo: 2432S028R_landscape.yaml
+  # Para activar: comentar las 2 líneas de arriba y descomentar las 2 de abajo
+  # hardware_file: modules/hardware/2432S028R_landscape.yaml
+  # hardware_type: "Resistive"  # Para referencia en logs
+
+  # ╔══════════════════════════════════════════════════════════════════════════╗
+  # ║  SECCIÓN 6: CONFIGURACIÓN GENERAL DEL SISTEMA                            ║
   # ╚══════════════════════════════════════════════════════════════════════════╝
   # Nivel de logging: NONE, ERROR, WARN, INFO, DEBUG, VERBOSE, VERY_VERBOSE
   log_level: "DEBUG"
@@ -197,11 +216,12 @@ packages:
   # Get correct time from homeassistant
   time: !include modules/base/time_homeassistant.yaml
 
-  # Harware description file CYD capacitiva <==================================
-  hardware: !include modules/hardware/JC2432W328_landscape.yaml
-
-  # Harware description file CYD resistiva <==================================
-  #====> hardware: !include modules/hardware/2432S028R_landscape.yaml
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Hardware configuration - Se configura en SECCIÓN 5 (substitutions)
+  # ═══════════════════════════════════════════════════════════════════════════
+  # La selección de hardware (capacitiva/resistiva) se hace arriba en substitutions
+  # cambiando la variable 'hardware_file'
+  hardware: !include ${hardware_file}
 
   # Basic boot screen with ESPHome logo and device diagnostic info
   boot_screen: !include modules/screens/boot_screen_170x320.yaml

@@ -10,6 +10,8 @@ This is an ESPHome configuration for a climate control touchscreen display runni
 
 **Version**: v2.0.0 - Reorganized for easy configuration with flexible number of thermostats and covers
 
+**Hardware Support**: Capacitive (WT32-SC01 PLUS) and Resistive (ESP32-2432S028R) CYD displays
+
 ## 📖 Configuration Organization (v2.0.0)
 
 The configuration file has been reorganized for maximum clarity and ease of modification:
@@ -22,7 +24,8 @@ All user-configurable settings are at the **TOP** of `cyd-negro-lvgl-thermostats
 2. **SECCIÓN 2**: Security and credentials (WiFi, API key, OTA password)
 3. **SECCIÓN 3**: Thermostat configuration (supports N thermostats)
 4. **SECCIÓN 4**: Cover/blind configuration (supports Z covers organized in pairs)
-5. **SECCIÓN 5**: General system settings (logging level, etc.)
+5. **SECCIÓN 5**: Hardware selection (Capacitive vs Resistive display)
+6. **SECCIÓN 6**: General system settings (logging level, etc.)
 
 ### Adding/Removing Thermostats
 
@@ -47,6 +50,17 @@ Covers are organized in **PAIRS** (left + right) that cycle automatically:
 - Line ~426-460: Update 4 arrays in `globals` (entities and labels for left/right)
 - Line ~861: Change `% 3` to number of pairs
 
+### Hardware Selection (Capacitive vs Resistive)
+
+The project supports **two versions** of CYD displays:
+- **Capacitive (Default)**: WT32-SC01 PLUS with CST816 I2C touch - Better UX
+- **Resistive**: ESP32-2432S028R with XPT2046 SPI touch - More economical
+
+**To switch hardware**:
+- Line ~125-142: In SECCIÓN 5, comment/uncomment the `hardware_file` variable
+- The system uses a single variable to select the correct hardware module
+- See `HARDWARE.md` for detailed comparison and identification guide
+
 ### Visual Indicators in Code
 
 All critical sections are marked with:
@@ -66,6 +80,7 @@ const int num_climates = 4;  // ← CAMBIAR al número total de termostatos
 
 - **README.md**: User-facing documentation with step-by-step guides
 - **CLAUDE.md**: This file - developer/AI assistant guidance
+- **HARDWARE.md**: Detailed hardware comparison and selection guide
 - **cyd-negro-lvgl-thermostats.yaml**: Main config with inline documentation
 
 ## Build and Development Commands
