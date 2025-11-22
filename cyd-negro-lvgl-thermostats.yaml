@@ -126,20 +126,15 @@ substitutions:
   # ║  SECCIÓN 5: SELECCIÓN DE HARDWARE (PANTALLA CYD)                         ║
   # ╚══════════════════════════════════════════════════════════════════════════╝
   #
-  # IMPORTANTE: Descomentar UNA de las dos opciones según tu hardware
+  # IMPORTANTE: La selección de hardware se hace más abajo en la sección "packages:"
+  # buscando la línea que dice "# Hardware configuration"
   #
-  # OPCIÓN A: Pantalla CYD CAPACITIVA (WT32-SC01 PLUS con FT6336U touch)
-  # - Touch capacitivo más preciso y responsivo
-  # - Archivo: JC2432W328_landscape.yaml
-  hardware_file: modules/hardware/JC2432W328_landscape.yaml
-  hardware_type: "Capacitive"  # Para referencia en logs
-
-  # OPCIÓN B: Pantalla CYD RESISTIVA (ESP32-2432S028R con XPT2046 touch)
-  # - Touch resistivo requiere presión
-  # - Archivo: 2432S028R_landscape.yaml
-  # Para activar: comentar las 2 líneas de arriba y descomentar las 2 de abajo
-  # hardware_file: modules/hardware/2432S028R_landscape.yaml
-  # hardware_type: "Resistive"  # Para referencia en logs
+  # Estas variables son solo para referencia en logs:
+  #
+  # Si usas CAPACITIVA (WT32-SC01 PLUS) - descomentar:
+  hardware_type: "Capacitive WT32-SC01 PLUS"
+  # Si usas RESISTIVA (ESP32-2432S028R) - descomentar:
+  # hardware_type: "Resistive ESP32-2432S028R"
 
   # ╔══════════════════════════════════════════════════════════════════════════╗
   # ║  SECCIÓN 6: CONFIGURACIÓN GENERAL DEL SISTEMA                            ║
@@ -217,11 +212,18 @@ packages:
   time: !include modules/base/time_homeassistant.yaml
 
   # ═══════════════════════════════════════════════════════════════════════════
-  # Hardware configuration - Se configura en SECCIÓN 5 (substitutions)
+  # Hardware configuration - SELECCIONA TU PANTALLA AQUÍ
   # ═══════════════════════════════════════════════════════════════════════════
-  # La selección de hardware (capacitiva/resistiva) se hace arriba en substitutions
-  # cambiando la variable 'hardware_file'
-  hardware: !include ${hardware_file}
+  # IMPORTANTE: Descomentar SOLO UNA de las dos opciones según tu hardware
+  #
+  # OPCIÓN A: Pantalla CAPACITIVA (WT32-SC01 PLUS) - ✅ RECOMENDADA
+  # Touch más preciso y responsivo (CST816 I2C)
+  hardware: !include modules/hardware/JC2432W328_landscape.yaml
+
+  # OPCIÓN B: Pantalla RESISTIVA (ESP32-2432S028R) - Más económica
+  # Touch requiere presión (XPT2046 SPI)
+  # Para activar: comentar la línea de arriba y descomentar la de abajo
+  # hardware: !include modules/hardware/2432S028R_landscape.yaml
 
   # Basic boot screen with ESPHome logo and device diagnostic info
   boot_screen: !include modules/screens/boot_screen_170x320.yaml

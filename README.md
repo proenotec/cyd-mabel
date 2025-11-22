@@ -58,19 +58,19 @@ friendly_name: 'Tu Dispositivo Nombre'
 
 ### 2. Selección de Hardware (Capacitiva/Resistiva)
 
-Editar `cyd-negro-lvgl-thermostats.yaml` en la **SECCIÓN 5** (aprox. línea 125):
+Editar `cyd-negro-lvgl-thermostats.yaml`, buscar la sección **"packages:"** (aprox. línea 215):
 
 **Por defecto viene configurada para Capacitiva**. Si tienes la versión resistiva, cambiar:
 
 ```yaml
-# Comentar estas líneas (versión capacitiva):
-# hardware_file: modules/hardware/JC2432W328_landscape.yaml
-# hardware_type: "Capacitive"
+# Comentar esta línea (versión capacitiva):
+# hardware: !include modules/hardware/JC2432W328_landscape.yaml
 
-# Descomentar estas líneas (versión resistiva):
-hardware_file: modules/hardware/2432S028R_landscape.yaml
-hardware_type: "Resistive"
+# Descomentar esta línea (versión resistiva):
+hardware: !include modules/hardware/2432S028R_landscape.yaml
 ```
+
+**IMPORTANTE**: Solo debe haber UNA línea `hardware: !include ...` sin comentar
 
 > 📖 **¿No sabes cuál tienes?** Ver [HARDWARE.md](HARDWARE.md#identificar-tu-pantalla)
 

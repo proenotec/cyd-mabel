@@ -91,29 +91,27 @@ backlight_pwm:
 
 ### Opción 1: Editar el archivo principal (RECOMENDADO)
 
-Editar `cyd-negro-lvgl-thermostats.yaml`, buscar **SECCIÓN 5** (aprox. línea 125):
+Editar `cyd-negro-lvgl-thermostats.yaml`, buscar la sección **"packages:"** y la subsección **"# Hardware configuration"** (aprox. línea 215):
 
 **Para Capacitiva (por defecto)**:
 ```yaml
-# OPCIÓN A: Pantalla CYD CAPACITIVA (WT32-SC01 PLUS con FT6336U touch)
-hardware_file: modules/hardware/JC2432W328_landscape.yaml
-hardware_type: "Capacitive"
+# OPCIÓN A: Pantalla CAPACITIVA (WT32-SC01 PLUS) - ✅ RECOMENDADA
+hardware: !include modules/hardware/JC2432W328_landscape.yaml
 
-# OPCIÓN B: Pantalla CYD RESISTIVA (comentada)
-# hardware_file: modules/hardware/2432S028R_landscape.yaml
-# hardware_type: "Resistive"
+# OPCIÓN B: Pantalla RESISTIVA (comentada)
+# hardware: !include modules/hardware/2432S028R_landscape.yaml
 ```
 
 **Para Resistiva**:
 ```yaml
-# OPCIÓN A: Pantalla CYD CAPACITIVA (comentada)
-# hardware_file: modules/hardware/JC2432W328_landscape.yaml
-# hardware_type: "Capacitive"
+# OPCIÓN A: Pantalla CAPACITIVA (comentada)
+# hardware: !include modules/hardware/JC2432W328_landscape.yaml
 
-# OPCIÓN B: Pantalla CYD RESISTIVA (activa)
-hardware_file: modules/hardware/2432S028R_landscape.yaml
-hardware_type: "Resistive"
+# OPCIÓN B: Pantalla RESISTIVA (activa)
+hardware: !include modules/hardware/2432S028R_landscape.yaml
 ```
+
+**IMPORTANTE**: Solo debes descomentar UNA línea `hardware: !include ...`
 
 ### Opción 2: Duplicar configuración (para múltiples dispositivos)
 

@@ -57,8 +57,9 @@ The project supports **two versions** of CYD displays:
 - **Resistive**: ESP32-2432S028R with XPT2046 SPI touch - More economical
 
 **To switch hardware**:
-- Line ~125-142: In SECCIÓN 5, comment/uncomment the `hardware_file` variable
-- The system uses a single variable to select the correct hardware module
+- Line ~215-226: In `packages:` section under "Hardware configuration"
+- Comment/uncomment the appropriate `hardware: !include ...` line
+- Only ONE hardware line should be uncommented at a time
 - See `HARDWARE.md` for detailed comparison and identification guide
 
 ### Visual Indicators in Code
