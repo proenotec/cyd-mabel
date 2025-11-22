@@ -1,0 +1,229 @@
+
+esp32:
+  board: esp32dev
+  # flash_size: 2MB # this line might not be needed for your specific board, but is for the Olimex ESP32-C6 I use
+  framework:
+    # type: esp-idf
+#     # Custom sdkconfig options
+#     # sdkconfig_options:
+#     #   CONFIG_COMPILER_OPTIMIZATION_SPEED: y
+#     #   CONFIG_GPIO_CTRL_FUNC_IN_IRAM: y
+    # psram: false  # Disable PSRAM
+    # sdkconfig_options:
+    #   CONFIG_ESPTOOLPY_FLASHSIZE_4MB: y
+    type: arduino
+    # Fix flash size by ensuring IDF flash size is also set (was defaulting to 2MB?!?)
+    # See https://github.com/esphome/issues/issues/5404
+
+spi:
+  - id: spi_tft
+    clk_pin: GPIO14
+    mosi_pin: GPIO13
+    miso_pin:
+      number: GPIO12
+      ignore_strapping_warning: true
+
+# Setup a pin to control the backlight and the LED
+output:
+  - platform: ledc
+    pin: GPIO27
+    id: backlight_pwm
+  - platform: ledc
+    id: output_red
+    pin: GPIO4
+    inverted: true
+  - platform: ledc
+    id: output_green
+    pin: GPIO16
+    inverted: true
+  - platform: ledc
+    id: output_blue
+    pin: GPIO17
+    inverted: true
+  #Buzzer
+#  - platform: ledc
+#    pin: GPIO26
+#    id: buzzer_output
+
+#rtttl:
+#  output: buzzer_output
+#  id: my_rtttl
+
+#api:
+#  actions:
+#    - action: rtttl_play
+#      variables:
+#        song_str: string
+#      then:
+#        - rtttl.play:
+#            rtttl: !lambda 'return song_str;'
+
+light:
+  - platform: monochromatic
+    output: backlight_pwm
+    name: Display Backlight
+    id: backlightctl
+    restore_mode: ALWAYS_ON
+    effects:
+      - pulse:
+          name: "Attention Pulse"
+          transition_length: 2s
+          update_interval: 5s
+          min_brightness: 5%
+          max_brightness: 100%
+      - strobe:
+          name: "Blink Attention"
+          colors:
+            - state: True
+              brightness: 100%
+              duration: 500ms
+            - state: True
+              brightness: 25%
+              duration: 500ms
+            - state: True
+              brightness: 100%
+              duration: 500ms
+            - state: True
+              brightness: 5%
+              duration: 5s
+      - random:
+          name: "My Slow Random Effect"
+          transition_length: 30s
+          update_interval: 30s
+      - random:
+          name: "My Fast Random Effect"
+          transition_length: 4s
+          update_interval: 5s
+      - pulse:
+          name: "Fast Pulse"
+          transition_length: 0.5s
+          update_interval: 0.5s
+          min_brightness: 0%
+          max_brightness: 100%
+      - pulse:
+          name: "Slow Pulse"
+          transition_length: 500ms
+          update_interval: 2s
+      - pulse:
+          name: "Asymmetrical Pulse"
+          transition_length:
+            on_length: 1s
+            off_length: 500ms
+          update_interval: 1.5s
+  - platform: rgb
+    name: LED
+    red: output_red
+    id: led
+    green: output_green
+    blue: output_blue
+    restore_mode: ALWAYS_OFF
+    effects:
+      - strobe:
+      - strobe:
+          name: "Strobe Effect With Custom Values"
+          colors:
+            - state: true
+              brightness: 100%
+              red: 100%
+              green: 90%
+              blue: 0%
+              duration: 500ms
+            - state: false
+              duration: 250ms
+            - state: true
+              brightness: 100%
+              red: 0%
+              green: 100%
+              blue: 0%
+              duration: 500ms
+# sensor:
+#   - platform: adc
+#     pin: 34
+#     name: "Brightness"
+#     update_interval: 60s
+
+display:
+  - platform: ili9xxx
+    id: main_display
+    model: ILI9342
+    spi_id: spi_tft
+    auto_clear_enabled: false
+    cs_pin: GPIO15
+    dc_pin: GPIO2
+    invert_colors: false
+    rotation: 90
+    # dimensions:
+    #   height: 240
+    #   width: 320
+i2c: # required for touchscreen
+  sda: GPIO33
+  scl: GPIO32
+  scan: true
+# Configurción pantalla táctil
+touchscreen:
+  platform: cst816
+  id: main_touch
+  #interrupt_pin: GPIO36
+  reset_pin: GPIO25
+  update_interval: 50ms # recommended if interrupt_pin is disabled
+  transform:
+    mirror_x: false
+    mirror_y: false
+    swap_xy: false
+  calibration:
+    x_min: 0
+    x_max: 240
+    y_min: 0
+    y_max: 320
+  on_release:
+    - if:
+        condition: lvgl.is_paused
+        then:
+          - logger.log: "LVGL resuming"
+          - lvgl.resume:
+          - lvgl.widget.redraw:
+          - light.turn_on: backlightctl
+  #on_touch:
+  #  then:
+  #    - rtttl.play: 'two_short:d=4,o=5,b=100:16e6,16e6'
+  #    #- rtttl.play: 'siren:d=8,o=5,b=100:d,e,d,e,d,e,d,e'
+  # on_touch:
+  #     - lambda: |-
+  #           ESP_LOGI("touch", "x=%d, y=%d, x_raw=%d, y_raw=%0d",
+  #               touch.x,
+  #               touch.y,
+  #               touch.x_raw,
+  #               touch.y_raw
+  #               );
+
+
+# sensor:
+#   - platform: adc
+#     pin: GPIO34
+#     name: "CYD Brightness"sensor:
+#   - platform: adc
+#     pin: GPIO34
+#     name: "CYD Brightness"
+#     id: measured_brightness
+#     attenuation: 12db
+#     update_interval: never
+#     filters:
+#       - multiply: 2
+#     id: measured_brightness
+#     attenuation: 12db
+#     update_interval: never
+#     filters:
+#       - multiply: 2
+#   - platform: adc
+#     id: "measured_brightness"
+#     pin: 34 # Note, this sensor is extremely sensitive. It will max out at pretty much anything brighter than total darkness.
+#     name: "CYD Brightness"
+#     update_interval: 10s
+    # unit_of_measurement: "%"
+    # filters:
+    #   - calibrate_linear:
+    #       - 0.070 -> 100
+    #       - 1.000 -> 0
+    #   - sliding_window_moving_average:
+    #       window_size: 100
+    #       send_every: 10

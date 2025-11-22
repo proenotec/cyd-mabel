@@ -1,0 +1,44 @@
+---
+# Light toggle button
+# vars:
+#   uid: unique button identifier
+#   x: horizontal position
+#   y: vertical position
+#   align: alignment anchor (TOP_LEFT, TOP_RIGHT, CENTER, etc.)
+#   width: button width
+#   height: button height
+#   text: button label text
+#   icon: MDI icon code
+#   icon_font: font for the icon
+#   entity_id: Home Assistant light entity_id
+
+x: ${x}
+y: ${y}
+align: ${align}
+width: ${width}
+height: ${height}
+id: button_${uid}
+bg_color: $button_off_color
+radius: 10
+widgets:
+  - label:
+      id: icon_${uid}
+      text_font: ${icon_font}
+      text_color: $icon_off_color
+      text: ${icon}
+      align: TOP_MID
+      y: 10
+  - label:
+      id: label_${uid}
+      align: BOTTOM_MID
+      y: -10
+      text_color: $label_off_color
+      text: ${text}
+on_press:
+  - script.execute: stop_idle_mode  # AÑADIR si quieres resetear timeout
+  - script.execute: idle_page_timeout  # AÑADIR para reiniciar contador
+  - homeassistant.service:
+      service: light.toggle
+      data:
+        entity_id: ${entity_id}
+  - script.execute: play_beep

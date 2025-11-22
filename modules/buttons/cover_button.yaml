@@ -1,0 +1,36 @@
+---
+# Cover button (up/stop/down)
+# vars:
+#   uid: unique button identifier
+#   x: horizontal position
+#   y: vertical position
+#   align: alignment anchor
+#   width: button width
+#   height: button height
+#   entity_id: Home Assistant cover entity_id
+#   icon: MDI icon to display
+#   icon_font: font for the icon (roboto_huge or roboto_med)
+#   icon_color: color for the icon
+#   service: Home Assistant service (cover.open_cover, cover.stop_cover, cover.close_cover)
+
+x: ${x}
+y: ${y}
+align: ${align}
+width: ${width}
+height: ${height}
+bg_color: color_dark_grey
+radius: 10
+widgets:
+  - label:
+      text: ${icon}
+      align: CENTER
+      text_font: ${icon_font}
+      text_color: ${icon_color}
+on_press:
+  - script.execute: stop_idle_mode
+  - script.execute: idle_page_timeout
+  - homeassistant.service:
+      service: ${service}
+      data:
+        entity_id: ${entity_id}
+  - script.execute: play_beep

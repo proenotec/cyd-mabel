@@ -1,0 +1,201 @@
+---
+# Boot Screen
+esphome:
+  on_boot:
+    priority: -100
+    then:
+      - delay: $boot_screen_delay
+      - lvgl.page.show:
+         id: main_page
+
+lvgl:
+  style_definitions:
+    - id: boot_screen_style
+      text_font: roboto24
+      text_color: black
+      bg_color: white
+      bg_opa: cover
+
+  pages:
+    - id: boot_screen
+      pad_all: 2
+      styles: boot_screen_style
+      <<: !include
+        file: ../sections/swipe_navigation.yaml
+      widgets:
+        - obj:
+            width: 1024
+            height: 100%
+            layout:
+              type: GRID
+              grid_rows: [ content,content,content,content,content,content,content,content,content,content ]
+              grid_columns: [ FR(25), FR(25),FR(50) ]
+              pad_column: 4
+              pad_row: 5
+            widgets:
+              - image:
+                  grid_cell_column_pos: 0
+                  grid_cell_row_pos: 0
+                  grid_cell_column_span: 3
+                  grid_cell_x_align: START
+                  src: boot_logo_100px
+                  pad_bottom: 10
+              - label:
+                  grid_cell_column_pos: 0
+                  grid_cell_row_pos: 1
+                  grid_cell_x_align: STRETCH
+                  grid_cell_y_align: CENTER
+                  text: "ESPHome Version:"
+              - label:
+                  id: esphome_version_label
+                  grid_cell_column_pos: 1
+                  grid_cell_row_pos: 1
+                  grid_cell_x_align: STRETCH
+                  grid_cell_y_align: CENTER
+                  text: "Loading..."
+              - label:
+                  grid_cell_column_pos: 0
+                  grid_cell_row_pos: 2
+                  grid_cell_x_align: STRETCH
+                  grid_cell_y_align: CENTER
+                  text: "Build Date:"
+              - label:
+                  grid_cell_column_pos: 1
+                  grid_cell_row_pos: 2
+                  grid_cell_x_align: STRETCH
+                  grid_cell_y_align: CENTER
+                  text:
+                    format: "%s - %s"
+                    args: [__DATE__, __TIME__]
+              - label:
+                  grid_cell_column_pos: 0
+                  grid_cell_row_pos: 3
+                  grid_cell_x_align: STRETCH
+                  grid_cell_y_align: CENTER
+                  text: "MAC Address:"
+              - label:
+                  id: connected_mac_label
+                  grid_cell_column_pos: 1
+                  grid_cell_row_pos: 3
+                  grid_cell_x_align: STRETCH
+                  grid_cell_y_align: CENTER
+                  text: "00:00:00:00:00:00"
+              - label:
+                  grid_cell_column_pos: 0
+                  grid_cell_row_pos: 4
+                  grid_cell_x_align: STRETCH
+                  grid_cell_y_align: CENTER
+                  text: "IP Address:"
+              - label:
+                  id: ip_address_label
+                  grid_cell_column_pos: 1
+                  grid_cell_row_pos: 4
+                  grid_cell_x_align: STRETCH
+                  grid_cell_y_align: CENTER
+                  text: "0.0.0.0"
+              - label:
+                  grid_cell_column_pos: 0
+                  grid_cell_row_pos: 5
+                  grid_cell_x_align: STRETCH
+                  grid_cell_y_align: CENTER
+                  text: "Connected SSID"
+              - label:
+                  id: connected_ssid_label
+                  grid_cell_column_pos: 1
+                  grid_cell_row_pos: 5
+                  grid_cell_x_align: STRETCH
+                  grid_cell_y_align: CENTER
+                  text: "Updating..."
+              - label:
+                  grid_cell_column_pos: 0
+                  grid_cell_row_pos: 6
+                  grid_cell_x_align: STRETCH
+                  grid_cell_y_align: CENTER
+                  text: "WiFi Strength"
+              - label:
+                  id: wifi_signal_db_percent_label
+                  grid_cell_column_pos: 1
+                  grid_cell_row_pos: 6
+                  grid_cell_x_align: STRETCH
+                  grid_cell_y_align: CENTER
+                  text: "Updating..."
+              - label:
+                  grid_cell_column_pos: 0
+                  grid_cell_row_pos: 7
+                  grid_cell_x_align: STRETCH
+                  grid_cell_y_align: CENTER
+                  text: "Device Name:"
+              - label:
+                  id: device_name_label
+                  grid_cell_column_pos: 1
+                  grid_cell_row_pos: 7
+                  grid_cell_x_align: STRETCH
+                  grid_cell_y_align: CENTER
+                  text: "Updating..."
+              - qrcode:
+                  id: cp_login
+                  grid_cell_column_pos: 0
+                  grid_cell_row_pos: 8
+                  grid_cell_x_align: START
+                  grid_cell_y_align: CENTER
+                  pad_left: 10
+                  pad_top: 10
+                  size: 100
+                  text: "WIFI:S:mynetwork;T:WPA;P:password;;"
+              - qrcode:
+                  id: cp_ip_address
+                  grid_cell_column_pos: 1
+                  grid_cell_row_pos: 8
+                  grid_cell_x_align: START
+                  grid_cell_y_align: CENTER
+                  pad_left: 10
+                  pad_top: 10
+                  size: 100
+                  text: "http://192.168.4.1"
+              - label:
+                  grid_cell_column_pos: 0
+                  grid_cell_row_pos: 9
+                  grid_cell_x_align: STRETCH
+                  grid_cell_y_align: CENTER
+                  text_font: roboto18
+                  text: "Captive Portal Wi-Fi"
+              - label:
+                  grid_cell_column_pos: 1
+                  grid_cell_row_pos: 9
+                  grid_cell_x_align: STRETCH
+                  grid_cell_y_align: CENTER
+                  text_font: roboto18
+                  text: "CP config page"
+              - image:
+                  grid_cell_column_pos: 2
+                  grid_cell_row_pos: 1
+                  grid_cell_row_span: 9
+                  grid_cell_x_align: CENTER
+                  grid_cell_y_align: CENTER
+                  src: solar_house
+                 
+        - button:
+            align: bottom_right
+            radius: 15
+            width: 120
+            height: 75
+            widgets:
+             - label:
+                 text_color: white
+                 align: center
+                 text: "OK"
+            on_press:
+              - lvgl.page.show: main_page
+
+image:
+  - file: modules/assets/logo-text-on-light.svg
+    id: boot_logo_100px
+    resize: 500x100 # aspect ratio 5
+    type: RGB565
+    transparency: alpha_channel
+
+  - file: modules/assets/solar_house.png
+    id: solar_house
+    resize: 500x239
+    type: RGB565
+    transparency: alpha_channel    

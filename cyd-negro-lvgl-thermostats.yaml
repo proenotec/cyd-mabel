@@ -1,0 +1,2261 @@
+# ESPHome configuration for Climate Control Display
+# Version: v1.0.0
+# Date: 2025-03-01
+# ESPHome Version 2025.2.1
+# WT32-SC01 PLUS
+# ZX3D50CE08S-v15-USRC 230228
+# 3.5 inch 320x480, driver ST7796UI, interface MCU8080 8Bit, color RGB565, ILI9488 controller
+# single touch capacitive FT6336U I2S
+# ESP32-S3 model ESP32-WROVER-B, WiFi + BT + BLE MCU module, 4MB SPI flash and 8MB PSRAM
+# https://www.marutsu.co.jp/contents/shop/marutsu/datasheet/khe_WT32-SC01-PLUS.pdf
+# https://esphome.io/components/touchscreen/ft63x6.html
+# https://www.esp32.com/viewtopic.php?t=39219
+# https://github.com/esphome/esphome/pull/8230 Implement i80 bus for ili9xxx displays
+# https://esphome.io/cookbook/lvgl.html
+# https://github.com/agillis/esphome-modular-lvgl-buttons/
+
+substitutions:
+  ##################################################################
+  # CONFIG - Update values ONLY here
+
+  # <================================== Cambiar
+  device_name: 'cyd-negro-lvgl-thermostats-new1'
+  friendly_name: 'CYD negro LVGL Thermostats New1'
+
+  # Secrets and Passwords - Update values in secrets.yaml
+  wifi_ssid1: !secret wifi_ssid_gvf
+  wifi_password1: !secret wifi_password_gvf
+  wifi_ssid2: !secret wifi_ssid_brasil
+  wifi_password2: !secret wifi_password_brasil
+  fallback_password: !secret fallback_password
+  # <==================================
+
+
+    # Define logging level: NONE, ERROR, WARN, INFO, DEBUG (Default), VERBOSE, VERY_VERBOSE
+  log_level: "DEBUG"
+
+  climate_entity_salon: climate.salon
+  climate_entity_bathroom: climate.bathroom
+  climate_entity_bedroom: climate.dorm
+  climate_entity_pasillo: climate.pasillo
+
+  cover_kitchen: cover.zbblind2_kitchen
+  cover_salon: cover.zbblind3_salon
+  cover_main_bedroom: cover.zbblind5_mainbedroom
+  cover_julia_bedroom: cover.zbblind1_julia
+  cover_first_bedroom: cover.zbblind6_firstbedroom
+  cover_bathroom: cover.zbblind4_bathroom
+
+  ota_password: "31d3d0777774a25672c0ddfd04f48ac5"
+
+  # <================================== Cambiar
+  api_key: "6CnIQufPCOzLUm3ln+kwRJttPzkk+rKEVIDqVLOythY="
+  # <==================================
+
+  ##################################################################
+  # Material Design Icons
+  mdi_wifi: "\U000F05A9"
+  mdi_wifi_off: "\U000F05AA"
+  mdi_power: "\U000F0425"
+  mdi_info: "\U000F1780"
+  mdi_fire: "\U000F0238"
+  mdi_fire_off: "\U000F1722"
+  mdi_thermometer: "\U000F050F"
+  mdi_chevron_up: "\U000F0143"
+  mdi_chevron_down: "\U000F0140"
+  mdi_plus: "\U000F0415"
+  mdi_minus: "\U000F0374"
+  mdi_square: "\U000F0764"
+  mdi_square_outline: "\U000F0763"
+
+  # Material Design Icons para la página de luces
+  mdi_lightbulb: "\U000F0335"
+  mdi_lightbulb_on: "\U000F06E8"
+  mdi_lightbulb_off: "\U000F0336"
+  mdi_home: "\U000F02DC"
+
+  # Material Design Icons para persianas
+  mdi_blinds: "\U000F0A0D"
+  mdi_blinds_open: "\U000F1011"
+  mdi_arrow_up: "\U000F005D"
+  mdi_arrow_down: "\U000F0045"
+  mdi_stop: "\U000F04DB"
+  mdi_window: "\U000F11DB" # window-closed-variant
+  mdi_window_open: "\U000F11DC" # window-open-variant
+
+  # Colores para botones de luces
+  button_on_color: "0x4CAF50"    # Verde cuando está encendido
+  button_off_color: "0x424242"   # Gris oscuro cuando está apagado
+  icon_on_color: "0xFFFFFF"      # Blanco
+  icon_off_color: "0x9E9E9E"     # Gris
+  label_on_color: "0xFFFFFF"     # Blanco
+  label_off_color: "0x9E9E9E"    # Gris
+
+  # Screen Size
+  screen_height: '240px'
+  screen_width: '320px'
+  # Boot screen configuration
+  boot_screen_delay: 60s
+
+  button_height_single: 80
+
+esphome:
+  name: $device_name
+  friendly_name: $friendly_name
+
+packages:
+  # Generic configuration for ESP32 screens
+  wifi: !include modules/base/wifi.yaml
+  # Basic ESP 32 stuff
+  base: !include modules/base/base.yaml
+  # If you have a touch screen include this
+  touchscreen: !include modules/base/touchscreen.yaml
+  # All the colors
+  colors: !include modules/base/color.yaml
+  # Fonts you need
+  fonts: !include modules/base/fonts.yaml
+  # Some basic sensors
+  sensors: !include modules/sensors/sensors_base.yaml
+#  # Styles + Themes
+#  theme_style: !include modules/base/theme_style.yaml
+  # Get correct time from homeassistant
+  time: !include modules/base/time_homeassistant.yaml
+
+  # Harware description file CYD capacitiva <==================================
+  hardware: !include modules/hardware/JC2432W328_landscape.yaml
+
+  # Harware description file CYD resistiva <==================================
+  #====> hardware: !include modules/hardware/2432S028R_landscape.yaml
+
+  # Basic boot screen with ESPHome logo and device diagnostic info
+  boot_screen: !include modules/screens/boot_screen_170x320.yaml
+
+  # This section will Update button and relay state from Home Assistant
+  # Any button that has real time updates needs a section here
+  # Button 1 - Standard light button with state updates
+  button_1_state: !include
+    file: modules/sensors/switch_or_light_button_state.yaml
+    vars:
+      uid: 1
+      entity_id: "light.petinfan_2_fanlight_2"
+
+  # Button 2 - Standard light button with state updates
+  button_2_state: !include
+    file: modules/sensors/switch_or_light_button_state.yaml
+    vars:
+      uid: 2
+      entity_id: "light.gvfsonoffdual_1_lamp"
+
+  # Button 3 - Standard light button with state updates
+  button_3_state: !include
+    file: modules/sensors/switch_or_light_button_state.yaml
+    vars:
+      uid: 3
+      entity_id: "light.a1_slwf_09"
+
+  # Button 4 - Standard light button with state updates
+  button_4_state: !include
+    file: modules/sensors/switch_or_light_button_state.yaml
+    vars:
+      uid: 4
+      entity_id: "switch.zbswitch11_kitchen_leds"
+
+  # Cover state monitoring for all 6 covers
+  cover_kitchen_state: !include
+    file: modules/sensors/cover_button_state.yaml
+    vars:
+      uid: kitchen
+      entity_id: ${cover_kitchen}
+      status_label_id: left_cover_status  # Will be updated dynamically
+
+  cover_salon_state: !include
+    file: modules/sensors/cover_button_state.yaml
+    vars:
+      uid: salon
+      entity_id: ${cover_salon}
+      status_label_id: right_cover_status
+
+  cover_main_bedroom_state: !include
+    file: modules/sensors/cover_button_state.yaml
+    vars:
+      uid: main_bedroom
+      entity_id: ${cover_main_bedroom}
+      status_label_id: left_cover_status
+
+  cover_julia_bedroom_state: !include
+    file: modules/sensors/cover_button_state.yaml
+    vars:
+      uid: julia_bedroom
+      entity_id: ${cover_julia_bedroom}
+      status_label_id: right_cover_status
+
+  cover_first_bedroom_state: !include
+    file: modules/sensors/cover_button_state.yaml
+    vars:
+      uid: first_bedroom
+      entity_id: ${cover_first_bedroom}
+      status_label_id: left_cover_status
+
+  cover_bathroom_state: !include
+    file: modules/sensors/cover_button_state.yaml
+    vars:
+      uid: bathroom
+      entity_id: ${cover_bathroom}
+      status_label_id: right_cover_status
+
+#  # Button 5 - Standard light button with state updates including dimming
+#  button_5_state: !include
+#    file: modules/sensors/dimmer_light_state.yaml
+#    vars:
+#      uid: button_5
+#      entity_id: light.athom_rgb_light_d93662_rgb_light_strip
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+preferences:
+  flash_write_interval: 1min
+
+debug:
+  update_interval: 60s
+
+api:
+  encryption:
+    key: $api_key
+  on_client_connected:
+    - if:
+        condition:
+          lambda: 'return (0 == client_info.find("Home Assistant "));'
+        then:
+          # Send do_not_clear command on startup
+          - text_sensor.template.publish:
+              id: clear_texto_command
+              state: "do_not_clear"
+
+          # Only update time if boot screen is not visible and time is valid
+          - if:
+              condition:
+                lambda: 'return !id(boot_screen_visible) && id(hass_time).now().is_valid();'
+              then:
+                - script.execute: update_date_time_label
+                - lambda: |-
+                    if (id(active_lvgl_page) != "main_page") {
+                      id(active_lvgl_page) = "main_page";
+                    }
+                - lvgl.page.show: main_page
+          - delay: 3s
+          - if:
+              condition:
+                lambda: 'return !id(boot_screen_visible);'
+              then:
+                - script.execute:
+                    id: cycle_climate
+                    direction: "none"
+
+  on_client_disconnected:
+    - if:
+        condition:
+          lambda: 'return (0 == client_info.find("Home Assistant "));'
+        then:
+          - lvgl.label.update:
+              id: date_time_label
+              text: "Disconnected"
+
+globals:
+  - id: current_cover_pair_index
+    type: int
+    restore_value: false
+    initial_value: '0'
+
+  - id: last_cover_button_press_time
+    type: uint32_t
+    restore_value: false
+    initial_value: '0'
+
+  # Add this new global to track which button was last pressed
+  - id: last_cover_button_type
+    type: std::string
+    restore_value: false
+    initial_value: '""'
+
+  - id: texto_page_climate_index
+    type: int
+    restore_value: false
+    initial_value: '0'
+
+  - id: system_ready
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+
+  - id: idle_mode_active
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+
+  - id: idle_timer_running
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+
+  - id: boot_screen_visible
+    type: bool
+    restore_value: false
+    initial_value: 'true'  # Boot screen starts visible
+
+  - id: current_climate_index
+    type: int
+    restore_value: false
+    initial_value: '0'
+
+  - id: current_climate_entity
+    type: std::string
+    restore_value: false
+    initial_value: '"${climate_entity_salon}"'
+
+  - id: current_page
+    type: int
+    restore_value: false
+    initial_value: '0'  # 0 = main_page, 1 = texto_page
+
+  - id: clearing_texto
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+
+  - id: active_lvgl_page
+    type: std::string
+    restore_value: false
+    initial_value: '"main_page"'  # Can be: main_page, texto_page, lights_page, covers_page, info_page
+
+  # Arrays de covers para reutilizar
+  - id: left_covers_array
+    type: const char*[3]
+    restore_value: false
+    initial_value: '{
+      "${cover_kitchen}",
+      "${cover_main_bedroom}",
+      "${cover_first_bedroom}"
+    }'
+
+  - id: right_covers_array
+    type: const char*[3]
+    restore_value: false
+    initial_value: '{
+      "${cover_salon}",
+      "${cover_julia_bedroom}",
+      "${cover_bathroom}"
+    }'
+
+  - id: left_cover_labels
+    type: const char*[3]
+    restore_value: false
+    initial_value: '{
+      "KITCHEN",
+      "MAIN BED",
+      "1ST BED"
+    }'
+
+  - id: right_cover_labels
+    type: const char*[3]
+    restore_value: false
+    initial_value: '{
+      "SALON",
+      "JULIA",
+      "BATHRM"
+    }'
+
+text_sensor:
+  # Template sensor para enviar comando de limpieza a HA
+  - platform: template
+    name: "Clear Texto Command"
+    id: clear_texto_command
+    # Esto publicará a HA y activará una automatización
+
+# Importar el sensor de texto desde Home Assistant
+  - platform: homeassistant
+    id: texto1_ha
+    entity_id: input_text.mi_texto1
+    internal: true
+    on_value:
+      then:
+        - lambda: |-
+            auto state = id(texto1_ha).state;
+            ESP_LOGI("texto1_ha", "Recibido texto: '%s'", state.c_str());
+
+            // Saltar si estamos en medio de limpiar el texto
+            if (id(clearing_texto)) {
+              ESP_LOGD("texto1_ha", "Saltando actualización - limpiando texto");
+              id(clearing_texto) = false;
+              return;
+            }
+
+            // Saltar si el sistema aún no está listo
+            if (!id(system_ready)) {
+              ESP_LOGD("texto1_ha", "Sistema no listo, ignorando actualización");
+              return;
+            }
+
+            // Log para debugging
+            ESP_LOGD("texto1_ha", "Nuevo valor: '%s', boot_visible=%d, idle_active=%d",
+                     state.c_str(), id(boot_screen_visible), id(idle_mode_active));
+
+            // Solo procesar si TODAS las condiciones se cumplen:
+            bool should_show = !state.empty() &&
+                              state != "none" &&
+                              state != "unknown" &&
+                              state != "unavailable" &&
+                              //!id(idle_mode_active) &&
+                              !id(boot_screen_visible);
+
+            if (should_show) {
+              ESP_LOGI("texto1_ha", "Mostrando página de texto: '%s'", state.c_str());
+              id(active_lvgl_page) = "texto_page";
+            } else {
+              ESP_LOGD("texto1_ha", "No mostrar texto - condiciones no cumplidas: '%s', boot_visible=%d, idle_active=%d",
+                     state.c_str(), id(boot_screen_visible), id(idle_mode_active));
+            }
+
+        # Cambiar a la página de texto solo si las condiciones se cumplen
+        - if:
+            condition:
+              lambda: |-
+                // Verificar que el sistema esté listo
+                if (!id(system_ready)) return false;
+
+                auto state = id(texto1_ha).state;
+                return (!state.empty() &&
+                        state != "none" &&
+                        state != "unknown" &&
+                        state != "unavailable" &&
+                        //!id(idle_mode_active) &&
+                        !id(boot_screen_visible));
+            then:
+              - lvgl.page.show: texto_page
+              - lvgl.label.update:
+                  id: texto_label
+                  text: !lambda 'return id(texto1_ha).state.c_str();'
+              - script.execute: turn_on_screen_light
+              - script.execute: stop_idle_mode
+              - script.execute: idle_page_timeout
+              - script.execute: cycle_texto_page_climates
+
+  # Climate 0: Salon
+  - platform: homeassistant
+    entity_id: ${climate_entity_salon}
+    id: hvac_mode_salon
+    internal: true
+
+  # Climate 1: Bathroom
+  - platform: homeassistant
+    entity_id: ${climate_entity_bathroom}
+    id: hvac_mode_bathroom
+    internal: true
+
+  # Climate 2: Bedroom
+  - platform: homeassistant
+    entity_id: ${climate_entity_bedroom}
+    id: hvac_mode_bedroom
+    internal: true
+
+  # Climate 3: Pasillo
+  - platform: homeassistant
+    entity_id: ${climate_entity_pasillo}
+    id: hvac_mode_pasillo
+    internal: true
+
+  # Climate 0: Salon - HVAC Action (Idle, Heating, Off)
+  - platform: homeassistant
+    entity_id: ${climate_entity_salon}
+    id: hvac_action_salon
+    attribute: hvac_action
+    internal: true
+    on_value:
+      - script.execute: update_climate_display
+
+  # Climate 1: Bathroom - HVAC Action
+  - platform: homeassistant
+    entity_id: ${climate_entity_bathroom}
+    id: hvac_action_bathroom
+    attribute: hvac_action
+    internal: true
+
+  # Climate 2: Bedroom - HVAC Action
+  - platform: homeassistant
+    entity_id: ${climate_entity_bedroom}
+    id: hvac_action_bedroom
+    attribute: hvac_action
+    internal: true
+    on_value:
+      - script.execute: update_climate_display
+
+  # Climate 3: Pasillo - HVAC Action
+  - platform: homeassistant
+    entity_id: ${climate_entity_pasillo}
+    id: hvac_action_pasillo
+    attribute: hvac_action
+    internal: true
+    on_value:
+      - script.execute: update_climate_display
+
+  # ESPHome Info
+  - platform: debug
+    reset_reason:
+      name: Reset Reason
+      disabled_by_default: True
+
+number:
+  # Display Backlight Brightness Adjust
+  - platform: template
+    name: "BackLight Brightness"
+    optimistic: true
+    id: backlight_brightness
+    icon: mdi:brightness-percent
+    unit_of_measurement: "%"
+    initial_value: 100
+    restore_value: true
+    min_value: 5
+    max_value: 100
+    step: 5
+    mode: slider
+
+  # Screen Timeout Adjust
+  - platform: template
+    name: "Screen Timeout"
+    optimistic: true
+    id: screen_timeout
+    icon: mdi:timer
+    unit_of_measurement: "s"
+    initial_value: 300
+    restore_value: true
+    min_value: 10
+    max_value: 300
+    step: 5
+    mode: slider
+
+binary_sensor:
+  - platform: status
+    name: "Node Status"
+    id: system_status
+    entity_category: "diagnostic"
+
+  - platform: homeassistant
+    entity_id: binary_sensor.maindoor_contact
+    id: maindoor_status
+    internal: true
+
+  - platform: homeassistant
+    entity_id: switch.zbswitch5
+    id: pasillo_switch
+    internal: true
+
+  - platform: homeassistant
+    entity_id: binary_sensor.maindormwnd_contact
+    id: maindorm_window
+    internal: true
+
+  - platform: homeassistant
+    entity_id: switch.zbswitch1
+    id: bedroom_switch
+    internal: true
+
+  - platform: homeassistant
+    entity_id: binary_sensor.bathroomwnd_contact
+    id: bathroom_window
+    internal: true
+
+  - platform: homeassistant
+    entity_id: switch.zbswitch2
+    id: salon_climate_switch
+    internal: true
+
+  - platform: homeassistant
+    entity_id: switch.zbswitch4
+    id: bathroom_switch
+    internal: true
+
+  - platform: homeassistant
+    entity_id: input_boolean.living_room_windows
+    id: salon_windows
+    internal: true
+
+  - platform: homeassistant
+    entity_id: switch.zbswitch13_acs
+    id: acs_on
+    internal: true
+
+  - platform: homeassistant
+    entity_id: binary_sensor.acs
+    id: acs_heating
+    internal: true
+
+sensor:
+  - platform: homeassistant
+    entity_id: weather.forecast_home
+    attribute: temperature
+    id: weather_temperature
+    internal: true
+
+  - platform: homeassistant
+    entity_id: sensor.atc_f7ba_temperature
+    id: gt_temp
+    internal: true
+
+  - platform: homeassistant
+    entity_id: sensor.atc_1e0a_temperature
+    id: bt_temp
+    internal: true
+
+  - platform: homeassistant
+    entity_id: sensor.radoneye_salon_radon
+    id: radon1
+    internal: true
+
+  # Salon sensors
+  - platform: homeassistant
+    entity_id: ${climate_entity_salon}
+    id: set_temperature_salon
+    attribute: temperature
+    internal: true
+
+  - platform: homeassistant
+    entity_id: ${climate_entity_salon}
+    id: current_temperature_salon
+    attribute: current_temperature
+    internal: true
+
+  # Bathroom sensors
+  - platform: homeassistant
+    entity_id: ${climate_entity_bathroom}
+    id: set_temperature_bathroom
+    attribute: temperature
+    internal: true
+
+  - platform: homeassistant
+    entity_id: ${climate_entity_bathroom}
+    id: current_temperature_bathroom
+    attribute: current_temperature
+    internal: true
+
+  # Bedroom sensors
+  - platform: homeassistant
+    entity_id: ${climate_entity_bedroom}
+    id: set_temperature_bedroom
+    attribute: temperature
+    internal: true
+
+  - platform: homeassistant
+    entity_id: ${climate_entity_bedroom}
+    id: current_temperature_bedroom
+    attribute: current_temperature
+    internal: true
+
+  # Pasillo sensors
+  - platform: homeassistant
+    entity_id: ${climate_entity_pasillo}
+    id: set_temperature_pasillo
+    attribute: temperature
+    internal: true
+
+  - platform: homeassistant
+    entity_id: ${climate_entity_pasillo}
+    id: current_temperature_pasillo
+    attribute: current_temperature
+    internal: true
+
+  - platform: uptime
+    name: "Uptime"
+    id: sys_uptime
+    entity_category: "diagnostic"
+    update_interval: 60s
+
+script:
+  - id: update_cover_labels
+    parameters:
+      pair_index: int
+    then:
+      - lambda: |-
+          const char* cover = id(left_cover_labels)[pair_index];
+          lv_label_set_text(id(left_cover_label), cover);
+          cover = id(right_cover_labels)[pair_index];
+          lv_label_set_text(id(right_cover_label), cover);
+
+  # Script para limpiar texto y volver a main_page - MODIFIED
+  - id: clear_texto_and_return
+    then:
+      - lambda: |-
+          id(clearing_texto) = true;
+          // Publicar comando que HA escuchará
+          id(clear_texto_command).publish_state("clear_requested");
+          ESP_LOGD("clear_texto", "Comando de limpieza enviado a HA");
+      - delay: 500ms
+
+      # Acknowledge that we're clearing
+      - text_sensor.template.publish:
+          id: clear_texto_command
+          state: "clearing"
+
+      - lvgl.page.show: main_page
+      - script.execute: update_climate_display
+
+      # After returning to main page, send final acknowledgment
+      - delay: 500ms
+      - text_sensor.template.publish:
+          id: clear_texto_command
+          state: "acknowledged"
+
+      - lambda: |-
+          ESP_LOGI("clear_texto", "Limpieza completada y reconocida");
+
+  # Script para ciclar pares de persianas en covers_page
+  - id: cycle_covers_page
+    mode: restart
+    then:
+      - while:
+          condition:
+            lambda: 'return id(active_lvgl_page) == "covers_page";'
+          then:
+            # Variable delay based on recent interaction
+            - delay: !lambda |-
+                static uint32_t last_stop_press_time = 0;
+                uint32_t current_time = millis();
+                uint32_t time_since_press = current_time - id(last_cover_button_press_time);
+
+                // Check if STOP was pressed twice quickly
+                bool quick_double_stop = (current_time - last_stop_press_time < 2000 && last_stop_press_time > 0);
+
+                // Store STOP press time if this was triggered by a STOP button
+                if (id(last_cover_button_press_time) > 0 && id(active_lvgl_page) == "covers_page") {
+                  last_stop_press_time = current_time;
+                }
+
+                if (quick_double_stop) {
+                  ESP_LOGI("covers_cycle", "Double STOP detected — forcing 5s delay");
+                  return 5000;  // Immediately switch to 5s delay
+                }
+
+                // Otherwise use the regular 30s vs 5s logic
+                if (time_since_press < 30000 && id(last_cover_button_press_time) > 0) {
+                  ESP_LOGD("covers_cycle", "Recent button press, using 30s delay");
+                  return 30000;  // 30 seconds
+                }
+
+                ESP_LOGD("covers_cycle", "No recent button press, using 5s delay");
+                return 5000;  // default
+
+            - if:
+                condition:
+                  lambda: 'return id(active_lvgl_page) == "covers_page";'
+                then:
+                  # Force update of cover states for the current pair
+                  - script.execute:
+                      id: update_cover_labels
+                      pair_index: !lambda 'return id(current_cover_pair_index);'
+                  - lambda: |-
+                      // Trigger state updates by calling the sensor update methods
+                      // The sensors will check if they belong to the current pair
+                      // and update accordingly
+                      int idx = id(current_cover_pair_index);
+                      ESP_LOGI("covers_cycle", "Mostrando par %d", idx);
+                      // Avanzar al siguiente par
+                      id(current_cover_pair_index) = (idx + 1) % 3;
+
+  # Script para ciclar climates en texto_page
+  - id: cycle_texto_page_climates
+    mode: restart
+    then:
+      - while:
+          condition:
+            lambda: 'return id(active_lvgl_page) == "texto_page";'
+          then:
+            - lambda: |-
+                // Arrays con la información de los climates
+                static const char* climate_labels[] = {"SALON", "BATHR.", "BEDR.", "PASILLO", "ACS", "OTHER", "OTHER2"};
+                static const char* window_icons[] = {"\U000F11DB", "\U000F11DC"};
+                static const char* heating_icons[] = {"\U000F1722", "\U000F0238"};
+                static const char* square_icons[] = {"\U000F0763", "\U000F0764"};
+
+                int idx = id(texto_page_climate_index);
+
+                float current_temp = NAN;
+                float set_temp = NAN;
+                std::string hvac_action;
+                bool window_state;
+                //bool heat_state;
+
+                // Obtener datos según el índice actual
+                switch(idx) {
+                  case 0: // Salon
+                    current_temp = id(current_temperature_salon).state;
+                    set_temp = id(set_temperature_salon).state;
+                    hvac_action = id(hvac_action_salon).state;
+                    window_state = id(salon_windows).state;
+                    //heat_state = id(salon_climate_switch).state;
+                    break;
+                  case 1: // Bathroom
+                    current_temp = id(current_temperature_bathroom).state;
+                    set_temp = id(set_temperature_bathroom).state;
+                    hvac_action = id(hvac_action_bathroom).state;
+                    window_state = id(bathroom_window).state;
+                    //heat_state = id(bathroom_switch).state;
+                    break;
+                  case 2: // Bedroom
+                    current_temp = id(current_temperature_bedroom).state;
+                    set_temp = id(set_temperature_bedroom).state;
+                    hvac_action = id(hvac_action_bedroom).state;
+                    window_state = id(maindorm_window).state;
+                    //heat_state = id(bedroom_switch).state;
+                    break;
+                  case 3: // Pasillo
+                    current_temp = id(current_temperature_pasillo).state;
+                    set_temp = id(set_temperature_pasillo).state;
+                    hvac_action = id(hvac_action_pasillo).state;
+                    window_state = id(maindoor_status).state;
+                    //heat_state = id(pasillo_switch).state;
+                    break;
+                  case 4: // ACS
+                    window_state = id(acs_on).state;
+                    break;
+                }
+                // Actualizar el label del nombre del climate
+                lv_label_set_text(id(texto_page_climate_label), climate_labels[idx]);
+                if (idx < 4) {
+                  // Actualizar el label de ventana abierta/cerrada
+                  int current_icon = 0;
+                  if (window_state) {
+                    lv_obj_set_style_text_color(id(texto_page_window_label), lv_color_hex(0xFF6B35), 0);
+                    current_icon = 1;
+                  } else {
+                    lv_obj_set_style_text_color(id(texto_page_window_label), lv_color_hex(0x9E9E9E), 0);
+                  }
+                  ESP_LOGI("window_icons", "current_icon: %d", current_icon);
+                  lv_label_set_text(id(texto_page_window_label), window_icons[current_icon]);
+
+                  // Actualizar el label de heating on/off
+                  current_icon = 0;
+
+                  // cambiar color según estado
+                  if (hvac_action == "heating") {
+                    current_icon = 1;
+                  }
+
+                  ESP_LOGI("heating_icons", "current_icon: %d", current_icon);
+                  lv_label_set_text(id(texto_page_heat_label), heating_icons[current_icon]);
+
+                  // cambiar color según estado
+                  if (hvac_action == "heating") {
+                    lv_obj_set_style_text_color(id(texto_page_heat_label), lv_color_hex(0x0000FF), 0);
+                  } else if (hvac_action == "idle") {
+                    lv_obj_set_style_text_color(id(texto_page_heat_label), lv_color_hex(0xFFFFFF), 0);
+                  } else {
+                    lv_obj_set_style_text_color(id(texto_page_heat_label), lv_color_hex(0x9E9E9E), 0);
+                  }
+
+                  // Actualizar el label de temperatura
+                  if (!isnan(current_temp) && !isnan(set_temp)) {
+                    char buf[30];
+                    snprintf(buf, sizeof(buf), "%.1f°C - %.1f°C", current_temp, set_temp);
+                    lv_label_set_text(id(texto_page_temp_label), buf);
+
+                    // Opcional: cambiar color según estado
+                    if (hvac_action == "heating") {
+                      lv_obj_set_style_text_color(id(texto_page_temp_label), lv_color_hex(0x0000FF), 0);
+                    } else if (hvac_action == "idle") {
+                      lv_obj_set_style_text_color(id(texto_page_temp_label), lv_color_hex(0xFFFFFF), 0);
+                    } else {
+                      lv_obj_set_style_text_color(id(texto_page_temp_label), lv_color_hex(0x9E9E9E), 0);
+                    }
+                  } else {
+                    lv_label_set_text(id(texto_page_temp_label), "---");
+                  }
+                } else if (idx == 4) {
+                  // Actualizar el label de ventana abierta/cerrada
+                  int current_icon = 0;
+                  if (window_state) {
+                    lv_obj_set_style_text_color(id(texto_page_window_label), lv_color_hex(0xFF6B35), 0);
+                    current_icon = 1;
+                  } else {
+                    lv_obj_set_style_text_color(id(texto_page_window_label), lv_color_hex(0x9E9E9E), 0);
+                  }
+
+                  lv_label_set_text(id(texto_page_window_label), square_icons[current_icon]);
+
+                  // Actualizar el label de heating on/off
+                  current_icon = 0;
+
+                  if (id(acs_heating).state)
+                    current_icon = 1;
+                  ESP_LOGI("heating_icons", "current_icon: %d", current_icon);
+                  lv_label_set_text(id(texto_page_heat_label), heating_icons[current_icon]);
+                  // Opcional: cambiar color según estado
+                  if (id(acs_heating).state) {
+                    lv_obj_set_style_text_color(id(texto_page_heat_label), lv_color_hex(0x0000FF), 0);
+                    current_icon = 1;
+                  } else {
+                    lv_obj_set_style_text_color(id(texto_page_heat_label), lv_color_hex(0xFFFFFF), 0);
+                  }
+
+                  char buf[35];
+                  snprintf(buf, sizeof(buf), "Petin: %.1f°C Rdon: %.1f Bq/m3", id(weather_temperature).state, id(radon1).state);
+                  lv_label_set_text(id(texto_page_temp_label), buf);
+                } else if (idx == 5) {
+                  lv_label_set_text(id(texto_page_window_label), "---");
+
+                  lv_label_set_text(id(texto_page_heat_label), "---");
+
+                  char buf[30];
+                  snprintf(buf, sizeof(buf), "BajoT: %.1f°C Gale: %.1f°C", id(bt_temp).state, id(gt_temp).state);
+                  lv_label_set_text(id(texto_page_temp_label), buf);
+                } else if (idx == 6) {
+                  lv_label_set_text(id(texto_page_window_label), "---");
+
+                  lv_label_set_text(id(texto_page_heat_label), "---");
+
+                  char buf[30];
+                  snprintf(buf, sizeof(buf), "Petin: %.1f°C Rdon: %.1f Bq/m3", id(weather_temperature).state, id(radon1).state);
+                  lv_label_set_text(id(texto_page_temp_label), buf);
+                }
+
+                ESP_LOGI("texto_climate", "Mostrando %s: %.1f°C - %.1f°C",
+                         climate_labels[idx], current_temp, set_temp);
+
+                // Avanzar al siguiente climate
+                id(texto_page_climate_index) = (idx + 1) % 6;
+
+            - delay: 5s  # Esperar 5 segundos antes de mostrar el siguiente
+
+  # Smart version that handles both boot and info modes
+  - id: hide_boot_screen_smart
+    then:
+      - script.stop: show_info_screen  # Stop info screen timer if running
+      - lvgl.widget.hide: boot_screen
+      - lvgl.widget.hide: info_buttons_container  # Hide the extra buttons
+      - lvgl.widget.show: date_time_label
+      - lvgl.widget.show: ha_status_icon_label
+      - lambda: |-
+          bool was_info_page = (id(active_lvgl_page) == "info_page");
+          id(boot_screen_visible) = false;
+          id(active_lvgl_page) = "main_page";
+          ESP_LOGI("boot_screen", "Hiding boot screen, was_info=%d", was_info_page);
+      - lvgl.page.show: main_page
+      # Only do first-time boot actions if we weren't in info mode
+      - if:
+          condition:
+            lambda: 'return !id(system_ready);'
+          then:
+            - script.execute:
+                id: cycle_climate
+                direction: "none"
+            - delay: 1s
+            - lambda: 'id(system_ready) = true;'
+            - delay: 1s
+      # Always restart idle mode when returning to main page
+      - script.execute: start_idle_mode
+
+  # Simplified info screen script
+  - id: show_info_screen
+    mode: restart
+    then:
+      - script.execute: stop_idle_mode
+      - lambda: |-
+          id(active_lvgl_page) = "info_page";
+          ESP_LOGI("info_screen", "Showing info screen");
+      - lvgl.widget.show: boot_screen
+      - lvgl.widget.show: info_buttons_container  # Show the extra buttons
+      - lvgl.widget.hide: date_time_label
+      - lvgl.widget.hide: ha_status_icon_label
+      - script.execute: play_beep
+      # Auto-return after 30 seconds if user doesn't press OK
+      - delay: 30s
+      - if:
+          condition:
+            lambda: 'return id(active_lvgl_page) == "info_page";'
+          then:
+            - script.execute: hide_boot_screen_smart
+
+  # Keep the original for backwards compatibility
+  - id: hide_boot_screen
+    then:
+      - script.execute: hide_boot_screen_smart
+
+# Script para iniciar el modo idle
+  - id: start_idle_mode
+    then:
+      - lambda: |-
+          id(idle_mode_active) = true;
+          // Asegurarse de que estamos en main_page antes de iniciar el ciclo
+          if (id(active_lvgl_page) != "main_page") {
+            ESP_LOGW("idle_mode", "No se puede activar idle - no estamos en main_page");
+            id(idle_mode_active) = false;
+            return;
+          }
+          ESP_LOGI("idle_mode", "Modo idle activado");
+      - script.execute: idle_cycle_thermostats
+      - script.execute: idle_page_timeout
+
+  # Script para detener el modo idle
+  - id: stop_idle_mode
+    then:
+      - lambda: |-
+          id(idle_mode_active) = false;
+          id(idle_timer_running) = false;
+          ESP_LOGI("idle_mode", "Modo idle desactivado");
+      - script.stop: idle_cycle_thermostats
+      - script.stop: idle_page_timeout
+
+  # Script para ciclar automáticamente los termostatos en main_page
+  - id: idle_cycle_thermostats
+    mode: restart
+    then:
+      - while:
+          condition:
+            lambda: 'return id(idle_mode_active) && id(active_lvgl_page) == "main_page";'
+          then:
+            - delay: 5s  # Cambiar cada 5 segundos
+            - if:
+                condition:
+                  lambda: 'return id(idle_mode_active) && id(active_lvgl_page) == "main_page";'
+                then:
+                  - script.execute:
+                      id: cycle_climate
+                      direction: "next"
+
+  # Script para volver a main_page después de timeout en otras páginas
+  - id: idle_page_timeout
+    mode: restart
+    then:
+      - delay: 30s  # 30 segundos de inactividad
+      - if:
+          condition:
+            lambda: |-
+              return id(idle_mode_active) &&
+                     (id(active_lvgl_page) == "lights_page" ||
+                      id(active_lvgl_page) == "covers_page" ||
+                      id(active_lvgl_page) == "texto_page");
+          then:
+            - lvgl.page.show: main_page
+            - lambda: |-
+                id(active_lvgl_page) = "main_page";
+                ESP_LOGI("idle_timeout", "Volviendo a main_page por timeout");
+            - script.execute: idle_cycle_thermostats
+
+# Update UI with current climate data
+  - id: update_climate_display
+    then:
+      - lambda: |-
+          int idx = id(current_climate_index);
+
+          // Declare variables first
+          std::string hvac_mode;
+          std::string hvac_action;
+          float set_temp = NAN;
+          float current_temp = NAN;
+
+          // Get data based on current climate index
+          switch(idx) {
+            case 0: // Salon
+              hvac_mode = id(hvac_mode_salon).state;
+              hvac_action = id(hvac_action_salon).state;
+              set_temp = id(set_temperature_salon).state;
+              current_temp = id(current_temperature_salon).state;
+              ESP_LOGD("update_climate", "Salon - mode='%s', action='%s', has_state=%d",
+                       hvac_mode.c_str(), hvac_action.c_str(), id(hvac_action_salon).has_state());
+              break;
+            case 1: // Bathroom
+              hvac_mode = id(hvac_mode_bathroom).state;
+              hvac_action = id(hvac_action_bathroom).state;
+              set_temp = id(set_temperature_bathroom).state;
+              current_temp = id(current_temperature_bathroom).state;
+              ESP_LOGD("update_climate", "Bathroom - mode='%s', action='%s', has_state=%d",
+                       hvac_mode.c_str(), hvac_action.c_str(), id(hvac_action_bathroom).has_state());
+              break;
+            case 2: // Bedroom
+              hvac_mode = id(hvac_mode_bedroom).state;
+              hvac_action = id(hvac_action_bedroom).state;
+              set_temp = id(set_temperature_bedroom).state;
+              current_temp = id(current_temperature_bedroom).state;
+              ESP_LOGD("update_climate", "Bedroom - mode='%s', action='%s', has_state=%d",
+                       hvac_mode.c_str(), hvac_action.c_str(), id(hvac_action_bedroom).has_state());
+              break;
+            case 3: // Pasillo
+              hvac_mode = id(hvac_mode_pasillo).state;
+              hvac_action = id(hvac_action_pasillo).state;
+              set_temp = id(set_temperature_pasillo).state;
+              current_temp = id(current_temperature_pasillo).state;
+              ESP_LOGD("update_climate", "Pasillo - mode='%s', action='%s', has_state=%d",
+                       hvac_mode.c_str(), hvac_action.c_str(), id(hvac_action_pasillo).has_state());
+              break;
+          }
+
+          ESP_LOGD("update_climate", "Before calling set_hvac_action - mode='%s', action='%s'",
+                   hvac_mode.c_str(), hvac_action.c_str());
+
+          // Handle empty action - provide a default
+          if (hvac_action.empty()) {
+            if (hvac_mode == "heat") {
+              hvac_action = "idle";  // Default to idle if no action available
+            } else if (hvac_mode == "off") {
+              hvac_action = "off";
+            } else {
+              hvac_action = "unknown";
+            }
+            ESP_LOGW("update_climate", "Action was empty, defaulting to: '%s'", hvac_action.c_str());
+          }
+
+          // Update HVAC action
+          id(set_hvac_action).execute(hvac_mode.c_str(), hvac_action.c_str());
+
+          // Update set temperature
+          if (!isnan(set_temp)) {
+            lv_meter_set_indicator_end_value(id(meter_ticks), id(hvac_temp_ticks), static_cast<int>(set_temp * 10));
+            lv_arc_set_value(id(hvac_temp_knob), static_cast<int>(set_temp * 10));
+
+            char buf[10];
+            snprintf(buf, sizeof(buf), "%.1f°C", round(set_temp * 10) / 10);
+            lv_label_set_text(id(hvac_temp_label), buf);
+          }
+
+          // Update current temperature
+          if (!isnan(current_temp)) {
+            lv_meter_set_indicator_value(id(meter_ticks), id(current_temp_needle), static_cast<int>(current_temp * 10));
+
+            char buf[15];
+            snprintf(buf, sizeof(buf), "%.1f", round(current_temp * 10) / 10);
+            lv_label_set_text(id(current_temp_label), buf);
+          }
+
+# Modificar el script cycle_climate para incluir detección de texto:
+  - id: cycle_climate
+    parameters:
+      direction: string
+    then:
+      - lambda: |-
+          // Define climate entities and their labels
+          static const char* climate_entities[] = {
+            "${climate_entity_salon}",
+            "${climate_entity_bathroom}",
+            "${climate_entity_bedroom}",
+            "${climate_entity_pasillo}"
+          };
+          static const char* climate_labels[] = {
+            "SALON",
+            "BATHR.",
+            "BEDR.",
+            "PASILLO"
+          };
+
+          const int num_climates = 4;
+
+          // Update index based on direction
+          if (direction == "next") {
+            id(current_climate_index) = (id(current_climate_index) + 1) % num_climates;
+          } else if (direction == "prev") {
+            id(current_climate_index) = (id(current_climate_index) - 1 + num_climates) % num_climates;
+          }
+
+          // Update current climate entity
+          id(current_climate_entity) = climate_entities[id(current_climate_index)];
+
+          // Update the label
+          lv_label_set_text(id(climate_label), climate_labels[id(current_climate_index)]);
+
+          ESP_LOGI("climate_cycle", "Switched to: %s (%s)",
+                   climate_labels[id(current_climate_index)],
+                   climate_entities[id(current_climate_index)]);
+      - script.execute: update_climate_display
+
+  # Screen Light Script
+  - id: turn_on_screen_light
+    mode: restart
+    then:
+      - lvgl.resume:
+      - light.turn_on:
+          id: display_backlight
+          brightness: !lambda return id(backlight_brightness).state / 100;
+          transition_length: 1s
+
+  - id: idle_screen_off
+    mode: restart
+    then:
+      - logger.log:
+          format: "idle_screen_off: Starting idle screen off sequence"
+          level: INFO
+
+      - logger.log:
+          format: "idle_screen_off: Step 1 - Dimming to 50%% brightness"
+          level: INFO
+      - light.turn_on:
+          id: display_backlight
+          brightness: 50%
+          transition_length: 5s
+
+      - logger.log:
+          format: "idle_screen_off: Step 1 complete - waiting 30s at 50%%"
+          level: INFO
+      - delay: 30s
+
+      - logger.log:
+          format: "idle_screen_off: Step 2 - Dimming to 35%% brightness"
+          level: INFO
+      - light.turn_on:
+          id: display_backlight
+          brightness: 35%
+          transition_length: 5s
+
+      - logger.log:
+          format: "idle_screen_off: Step 2 complete - waiting 30s at 35%%"
+          level: INFO
+      - delay: 30s
+
+      - logger.log:
+          format: "idle_screen_off: Step 3 - Turning off backlight completely"
+          level: INFO
+      - light.turn_off:
+          id: display_backlight
+
+      - logger.log:
+          format: "idle_screen_off: Step 4 - Pausing LVGL with snow effect"
+          level: INFO
+      - lvgl.pause:
+          show_snow: true
+
+      - logger.log:
+          format: "idle_screen_off: Sequence complete - screen is now off"
+          level: INFO
+
+      # NOW start idle mode after screen is fully off
+      - script.execute: start_idle_mode
+
+  # Update Time Label - Only if time is valid
+  - id: update_date_time_label
+    then:
+      - if:
+          condition:
+            lambda: 'return id(hass_time).now().is_valid();'
+          then:
+            - lvgl.label.update:
+                id: date_time_label
+                text: !lambda |-
+                  static const char * const day_names[] = {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
+                  static char buf[20];
+                  auto now = id(hass_time).now();
+                  snprintf(buf, sizeof(buf), "%s %02d:%02d",
+                          day_names[now.day_of_week-1],
+                          now.hour,
+                          now.minute);
+                  return buf;
+          else:
+            - lvgl.label.update:
+                id: date_time_label
+                text: "No time"
+
+  # HVAC Modes UI scripts
+  - id: set_hvac_action
+    parameters:
+      mode: string
+      action: string
+    then:
+      # Debug logging
+      - lambda: |-
+          ESP_LOGD("set_hvac_action", "Called with mode='%s', action='%s'", mode.c_str(), action.c_str());
+
+      # Reset other buttons to inactive color
+      - lvgl.label.update:
+          id: heat_label
+          text_color: color_grey
+
+      # Update action label
+      - lvgl.label.update:
+          id: action_label
+          text: !lambda |-
+            ESP_LOGD("action_label", "Setting text to: '%s'", action.c_str());
+            return action.c_str();
+
+      # Action Label update
+      - if:
+          condition:
+            lambda: 'return (mode == "off" || mode == "unavailable" || mode == "unknown");'
+          then:
+            - lvgl.label.update:
+                id: power_button_label
+                text_color: color_grey
+            - lvgl.widget.hide:
+              - temp_inc_button
+              - temp_dec_button
+              - temp_label
+              - meter_ticks
+              - hvac_temp_knob
+            - lvgl.label.update:
+                id: hvac_temp_label
+                text_color: color_grey
+          else:
+            - lvgl.label.update:
+                id: power_button_label
+                text_color: color_success
+            - lvgl.widget.show:
+              - temp_inc_button
+              - temp_dec_button
+              - temp_label
+              - meter_ticks
+              - hvac_temp_knob
+            - lvgl.label.update:
+                id: hvac_temp_label
+                text_color: color_white
+
+      # Update heat icon based on action
+      - if:
+          condition:
+            lambda: 'return action == "heating";'
+          then:
+            - lvgl.label.update:
+                id: heat_label
+                text_color: color_heat
+
+      - if:
+          condition:
+            lambda: 'return action == "idle" && mode == "heat";'
+          then:
+            - lvgl.label.update:
+                id: heat_label
+                text_color: color_grey
+
+  # Set HVAC Temperature UI scripts
+  - id: set_hvac_temp
+    parameters:
+      direction: string
+    then:
+      - homeassistant.service:
+          service: climate.set_temperature
+          data:
+            entity_id: !lambda return id(current_climate_entity);
+            temperature: !lambda |-
+              int idx = id(current_climate_index);
+              float current_temp = NAN;
+
+              // Get current set temperature for the active climate
+              switch(idx) {
+                case 0: current_temp = id(set_temperature_salon).state; break;
+                case 1: current_temp = id(set_temperature_bathroom).state; break;
+                case 2: current_temp = id(set_temperature_bedroom).state; break;
+                case 3: current_temp = id(set_temperature_pasillo).state; break;
+              }
+
+              if (!isnan(current_temp)) {
+                if (direction == "up") {
+                  return static_cast<double>(current_temp) + 0.5;
+                } else {
+                  return static_cast<double>(current_temp) - 0.5;
+                }
+              }
+              return static_cast<double>(current_temp);
+      - script.execute: update_climate_display
+
+#  - id: play_beep
+#    mode: single
+#    then:
+#      - rtttl.play: "beep:d=4,o=5,b=100:16e6"
+#      - delay: 0.5s
+#  - id: play_beep
+#    mode: restart  # Changed from 'single' to 'restart'
+#    then:
+#      - rtttl.play: "beep:d=4,o=5,b=100:16e6"
+
+  - id: play_beep
+    mode: queued  # Queue beeps instead of restarting
+    max_runs: 3   # Limit queue to 3 beeps
+    then:
+      - rtttl.play: "beep:d=4,o=5,b=100:16e6"
+
+lvgl:
+  log_level: WARN
+  buffer_size: 10%
+  # LVGL GUI Design
+  displays: device_display
+  touchscreens: device_touchscreen
+  on_idle:
+    - timeout: !lambda return id(screen_timeout).state * 1000;
+      then:
+        - script.execute: idle_screen_off
+
+  bg_color: color_darker_grey
+  text_color: color_white
+  scrollbar_mode: "OFF"
+  default_font: roboto_reg
+  style_definitions:
+    - id: style_menu_button
+      align: CENTER
+      bg_opa: TRANSP
+      shadow_opa: TRANSP
+      height: 50
+      width: 50
+      radius: 50%
+    - id: style_menu_button_label
+      align: CENTER
+      y: 3
+      text_font: roboto_med
+    - id: style_circle_button
+      bg_opa: TRANSP
+      radius: 75
+      outline_width: 1
+      width: 50
+      height: 50
+    - id: style_mode_button
+      bg_opa: TRANSP
+      radius: 50
+      outline_width: 1
+      height: 35
+      width: 60
+      align: BOTTOM_MID
+    - id: style_circle_label
+      align: center
+      y: 2
+      text_align: center
+      text_font: roboto_med
+
+  top_layer:
+    widgets:
+      # Time
+      - label:
+          id: date_time_label
+          text: "Connecting..." # Time to be updated from Home Assistant time
+          hidden: true  # Start hidden
+          align: TOP_LEFT
+          x: 10
+          y: 10
+          text_align: CENTER
+          text_color: color_grey
+      # Wifi icon
+      - label:
+          id: ha_status_icon_label
+          hidden: true  # Start hidden
+          align: TOP_RIGHT
+          x: -10
+          y: 10
+          text_align: RIGHT
+          text_color: color_warning  # Wifi icon color to be updated from Home Assistant API status
+          text: ${mdi_wifi_off} # Wifi icon to be updated from Home Assistant API status
+          text_font: roboto_reg
+
+  pages:
+    # Nueva página para mostrar texto
+    - id: texto_page
+      widgets:
+        # Botón para volver a main_page
+        - button:
+            id: back_button
+            x: 100
+            y: 10
+            align: TOP_LEFT
+            width: 80
+            height: 40
+            widgets:
+              - label:
+                  text: "BACK"
+                  align: CENTER
+                  text_font: roboto_reg
+            on_press:
+              - script.stop: cycle_texto_page_climates
+              - script.execute: clear_texto_and_return
+              - script.execute: play_beep
+
+        # Contenedor para el texto con scroll
+        - obj:
+            id: texto_container
+            x: 10
+            y: 60
+            width: 300
+            height: 65  # El alto es limitado, permitiendo que el texto largo se desborde
+            bg_color: color_dark_grey
+            border_width: 2
+            border_color: color_accent
+            radius: 10
+            pad_all: 15
+            scrollbar_mode: AUTO # ¡Esto habilita la barra de desplazamiento si el contenido es más grande!
+            widgets:
+              - label:
+                  id: texto_label
+                  align: TOP_LEFT
+                  x: 0
+                  y: 0
+                  text: "Esperando texto..."
+                  text_font: roboto_med
+                  text_color: color_white
+                  long_mode: SCROLL # ¡Esto hace que el texto se envuelva dentro del ancho del contenedor!
+                  width: 260
+
+        # Información del termostato actual
+        - obj:
+            align: BOTTOM_MID
+            y: -10
+            width: 90%
+            height: 90
+            bg_color: color_dark_grey
+            border_width: 1
+            border_color: color_grey
+            radius: 10
+            widgets:
+              - label:
+                  id: texto_page_climate_label
+                  align: TOP_LEFT
+                  y: 0
+                  text: "SALON"
+                  text_font: roboto_med
+                  text_color: color_accent
+              - label:
+                  id: texto_page_window_label
+                  align: TOP_MID
+                  y: 0
+                  text: ""
+                  text_font: roboto_med
+                  text_color: color_grey
+              - label:
+                  id: texto_page_heat_label
+                  align: TOP_MID
+                  x: 30
+                  y: 0
+                  text: ""
+                  text_font: roboto_med
+                  text_color: color_heat
+              - label:
+                  id: texto_page_temp_label
+                  align: CENTER
+                  y: 20
+                  text: "22.5°C"
+                  text_font: roboto_reg
+                  text_color: color_temp_current
+
+    - id: main_page
+      widgets:
+        # Arc Outer Ring only for visual effect
+        - arc:
+            id: arc_ring_outer
+            height: 200    # Changed from 250
+            width: 200     # Changed from 250
+            y: -5          # Changed from -10
+            align: CENTER
+            arc_color: color_light_grey
+            arc_opa: COVER
+            arc_width: 8   # Changed from 10
+            arc_rounded: false
+            knob:
+              bg_color: color_white
+        # Arc Inner Ring only for visual effect
+        - obj:
+            id: arc_ring_inner
+            height: 190    # Changed from 238
+            width: 190     # Changed from 238
+            y: -5          # Changed from -10
+            radius: 95     # Changed from 120
+            align: CENTER
+            border_width: 32  # Changed from 40
+            border_color: color_dark_grey
+            bg_color: color_darker_grey
+        # Meter ticks and needle
+        - meter:
+            id: meter_ticks
+            hidden: true
+            height: 198    # Changed from 248
+            width: 198     # Changed from 248
+            y: -5          # Changed from -10
+            align: CENTER
+            bg_opa: TRANSP
+            border_width: 0
+            scales:
+              range_from: 160   # 16°C
+              range_to: 340     # 34°C
+              # Set temperature ticks background
+              ticks:
+                count: 60
+                length: 15   # Changed from 18
+                width: 2
+                color: color_temp_ticks
+              indicators:
+                # Curremt temperature needle
+                - line:
+                    id: current_temp_needle
+                    color: color_temp_current
+                    width: 3
+                    r_mod: 8     # Changed from 10
+                    value: 340 # 34°C Should be the same as the current temperature label
+
+                # Set temperature ticks
+                - tick_style:
+                    id: hvac_temp_ticks
+                    start_value: 160
+                    end_value: 240 # 24°C Should be the same as the set temperature label
+                    color_start: color_temp_set
+                    color_end: color_temp_set
+                    width: 2
+
+        # Meter inner Ring only for visual effect
+        - obj:
+            id: meter_ring_inner
+            height: 144    # Changed from 180
+            width: 144     # Changed from 180
+            y: -5          # Changed from -10
+            radius: 72     # Changed from 120 (half of height)
+            align: CENTER
+            border_width: 10  # Changed from 12
+            border_color: color_dark_grey
+            bg_color: color_darker_grey
+
+        # Set temperature knob, should change with the set temperature ticks
+        - arc:
+            id: hvac_temp_knob
+            hidden: true
+            align: CENTER
+            arc_opa: TRANSP
+            adjustable: true
+            value: 240 # 24°C (24x10) Should be the same as the set temperature needle
+            min_value: 160
+            max_value: 340
+            width: 172     # Changed from 215
+            height: 172    # Changed from 215
+            y: -5          # Changed from -10
+            arc_width: 13  # Changed from 16
+            change_rate: 30
+            indicator:
+              arc_opa: TRANSP
+              arc_width: 13  # Changed from 16
+            knob:
+              bg_color: color_temp_set
+              border_width: 4
+              border_color: color_white
+            on_change:
+              then:
+                - homeassistant.service:
+                    service: climate.set_temperature
+                    data:
+                      entity_id: !lambda return id(current_climate_entity);
+                      temperature: !lambda |-
+                        double temp = static_cast<double>(x) / 10.0;
+                        return std::round(temp * 2.0) / 2.0;
+                - script.execute: play_beep
+                - delay: 3s
+                - script.execute: update_climate_display
+
+        # SALON, BATH, BED, PASI
+        - label:
+            id: climate_label
+            align: CENTER
+            y: -60
+            text: "CLI" # Climate thermostat
+            text_font: roboto_reg
+            text_color: color_grey
+
+        # HVAC action: Off, Idle, Heating
+        - label:
+            id: action_label
+            align: CENTER
+            y: -40
+            text: "KPR" # HVAC mode to be updated from Home Assistant climate entity
+            text_font: roboto_reg
+            text_color: color_grey
+
+        # Set Temperature label, should change with the set temperature knob
+        - label:
+            id: current_temp_label
+            hidden: false
+            align: CENTER
+            y: -0
+            text_font: roboto_huge
+            text: "---" # Current temperature to be updated from Home Assistant climate entity
+
+        # Celsius label only to show °C
+        - label:
+            id: celsius_label
+            align: CENTER
+            x: 60
+            y: -15
+            text: "°C"
+
+        # Current Temperature label, should change with the current temperature needle
+        - label:
+            id: hvac_temp_label
+            hidden: false
+            align: CENTER
+            y: 30
+            text: "---" # Set temperature to be updated from Home Assistant climate entity
+            text_color: color_temp_current
+
+        # Temperature buttons
+        # HVAC increase temperature
+        - button:
+            id: temp_inc_button
+            hidden: true
+            x: 10
+            y: -60
+            align: LEFT_MID
+            styles: style_circle_button
+            widgets:
+              - label:
+                  styles: style_circle_label
+                  text: ${mdi_plus}
+            on_press:
+              - script.execute:
+                  id: set_hvac_temp
+                  direction: "up"
+              - script.execute: play_beep
+              - delay: 3s
+              - script.execute: update_climate_display
+
+        # Temperature label only to show temp con
+        - label:
+            id: temp_label
+            hidden: true
+            align: LEFT_MID
+            x: 22
+            y: -5
+            text_align: CENTER
+            text: ${mdi_thermometer}
+            text_font: roboto_med
+
+        - label:
+            id: heat_label
+            align: RIGHT_MID
+            x: -7
+            y: -15
+            styles: style_menu_button_label
+            text: ${mdi_fire}
+            text_color: color_grey
+
+        # HVAC decrease temperature
+        - button:
+            id: temp_dec_button
+            hidden: true
+            x: 10
+            y: 40
+            align: LEFT_MID
+            styles: style_circle_button
+            widgets:
+              - label:
+                  styles: style_circle_label
+                  text: ${mdi_minus}
+            on_press:
+              - script.execute:
+                  id: set_hvac_temp
+                  direction: "down"
+              - script.execute: play_beep
+              - delay: 3s
+              - script.execute: update_climate_display
+
+        # Cycle Climate buttons
+        # Show next room climate
+        - button:
+            id: climate_next_button
+            hidden: false
+            x: -10
+            y: -60
+            align: RIGHT_MID
+            styles: style_circle_button
+            widgets:
+              - label:
+                  styles: style_circle_label
+                  text: ${mdi_chevron_up}
+            on_press:
+              - script.execute: stop_idle_mode  # AÑADIR ESTA LÍNEA
+              - script.execute:
+                  id: cycle_climate
+                  direction: "next"
+              - script.execute: play_beep
+
+        - button:
+            id: climate_prev_button
+            hidden: false
+            x: -10
+            y: 20
+            width: 50
+            height: 50
+            align: RIGHT_MID
+            styles: style_circle_button
+            widgets:
+              - label:
+                  styles: style_circle_label
+                  text: ${mdi_chevron_down}
+            on_press:
+              - script.execute: stop_idle_mode  # AÑADIR ESTA LÍNEA
+              - script.execute:
+                  id: cycle_climate
+                  direction: "prev"
+              - script.execute: play_beep
+
+        # INFO
+        - button:
+            id: info_button
+            x: -40
+            y: -5
+            styles: style_mode_button
+            widgets:
+              - label:
+                  id: info_button_label
+                  styles: style_menu_button_label
+                  text: ${mdi_info}
+                  text_color: color_grey
+            on_press:
+              - script.execute: show_info_screen
+
+        # HVAC Mode buttons
+        # POWER
+        - button:
+            id: power_button
+            x: 40
+            y: -5
+            styles: style_mode_button
+            widgets:
+              - label:
+                  id: power_button_label
+                  styles: style_menu_button_label
+                  text: ${mdi_power}
+                  text_color: color_grey
+            on_press:
+              - homeassistant.service:
+                  service: climate.set_hvac_mode
+                  data:
+                    entity_id: !lambda return id(current_climate_entity);
+                    hvac_mode: !lambda |-
+                      int idx = id(current_climate_index);
+                      std::string hvac_mode;
+
+                      switch(idx) {
+                        case 0: hvac_mode = id(hvac_mode_salon).state; break;
+                        case 1: hvac_mode = id(hvac_mode_bathroom).state; break;
+                        case 2: hvac_mode = id(hvac_mode_bedroom).state; break;
+                        case 3: hvac_mode = id(hvac_mode_pasillo).state; break;
+                      }
+
+                      if (hvac_mode == "off") {
+                        return "heat";
+                      } else {
+                        return "off";
+                      }
+              - script.execute: play_beep
+              - delay: 3s
+              - script.execute: update_climate_display
+
+        - button:
+            id: goto_lights_button
+            x: 10
+            y: 5
+            align: BOTTOM_LEFT
+            width: 60
+            height: 50
+            bg_color: color_dark_grey
+            radius: 10
+            widgets:
+              - label:
+                  text: ${mdi_lightbulb}
+                  align: CENTER
+                  text_font: roboto_huge
+                  text_color: color_accent
+            on_press:
+              - script.execute: stop_idle_mode
+              - lambda: 'id(active_lvgl_page) = "lights_page";'
+              - lvgl.page.show: lights_page
+              - script.execute: play_beep
+              - script.execute: idle_page_timeout  # Iniciar timeout para volver
+
+        # Botón para ir a página de persianas
+        - button:
+            id: goto_covers_button
+            x: -10
+            y: 5
+            align: BOTTOM_RIGHT
+            width: 60
+            height: 50
+            bg_color: color_dark_grey
+            radius: 10
+            widgets:
+              - label:
+                  text: ${mdi_blinds_open}
+                  align: CENTER
+                  text_font: roboto_huge
+                  text_color: color_accent
+            on_press:
+              - script.execute: stop_idle_mode
+              - lambda: |-
+                  id(active_lvgl_page) = "covers_page";
+                  id(current_cover_pair_index) = 0;  // Reset to first pair
+              - script.execute:
+                  id: update_cover_labels
+                  pair_index: 0
+              - lvgl.page.show: covers_page
+              - script.execute: play_beep
+              - script.execute: idle_page_timeout
+              - script.execute: cycle_covers_page  # Start the cycling
+
+    - id: lights_page
+      widgets:
+        # Botón para volver a main_page
+        - button:
+            id: lights_back_button
+            x: -40
+            y: 10
+            align: TOP_RIGHT
+            width: 60
+            height: 40
+            bg_color: color_dark_grey
+            radius: 10
+            widgets:
+              - label:
+                  text: ${mdi_home}
+                  align: CENTER
+                  text_font: roboto_med
+                  text_color: color_accent
+            on_press:
+              - lambda: 'id(active_lvgl_page) = "main_page";'
+              - lvgl.page.show: main_page
+              - script.execute: play_beep
+              - script.execute: start_idle_mode  # Reactivar modo idle
+
+
+        # Título de la página
+        - label:
+            align: TOP_MID
+            y: 15
+            text: "LIGHTS"
+            text_font: roboto_med
+            text_color: color_accent
+
+        # Grid de botones (2x2)
+        # Button 1 - Standard light button with state updates
+        # Button 1 - Petinfan (Top Left)
+        - button: !include
+            file: modules/buttons/light_button.yaml
+            vars:
+              uid: 1
+              x: 20
+              y: 60
+              align: TOP_LEFT
+              width: 140
+              height: $button_height_single
+              text: "Petinfan"
+              icon: $mdi_lightbulb
+              icon_font: light12
+              entity_id: "light.petinfan_2_fanlight_2"
+
+        # Button 2 - Standard light button with state updates
+        # Button 2 - Sonoff (Top Right)
+        - button: !include
+            file: modules/buttons/light_button.yaml
+            vars:
+              uid: 2
+              x: -20
+              y: 60
+              align: TOP_RIGHT
+              width: 140
+              height: $button_height_single
+              text: "Sonoff"
+              icon: $mdi_lightbulb
+              icon_font: light12
+              entity_id: "light.gvfsonoffdual_1_lamp"
+
+        # Button 3 - Standard light button with state updates
+        # Button 3 - WLED (Bottom Left)
+        - button: !include
+            file: modules/buttons/light_button.yaml
+            vars:
+              uid: 3
+              x: 20
+              y: 140
+              align: TOP_LEFT
+              width: 140
+              height: $button_height_single
+              text: "WLED"
+              icon: $mdi_lightbulb
+              icon_font: light12
+              entity_id: "light.a1_slwf_09"
+
+        # Button 4 - Standard switch button with state updates
+        # Button 4 - Kitchen (Bottom Right)
+        - button: !include
+            file: modules/buttons/switch_button.yaml
+            vars:
+              uid: 4
+              x: -20
+              y: 140
+              align: TOP_RIGHT
+              width: 140
+              height: $button_height_single
+              text: "Kitchen"
+              icon: $mdi_lightbulb
+              icon_font: light12
+              entity_id: "switch.zbswitch11_kitchen_leds"
+
+    - id: covers_page
+      widgets:
+        # Botón para volver a main_page
+        - button:
+            id: covers_back_button
+            x: -40
+            y: 10
+            align: TOP_RIGHT
+            width: 60
+            height: 40
+            bg_color: color_dark_grey
+            radius: 10
+            widgets:
+              - label:
+                  text: ${mdi_home}
+                  align: CENTER
+                  text_font: roboto_med
+                  text_color: color_accent
+            on_press:
+              - script.stop: cycle_covers_page  # Detener el ciclo
+              - lambda: 'id(active_lvgl_page) = "main_page";'
+              - lvgl.page.show: main_page
+              - script.execute: play_beep
+              - script.execute: start_idle_mode  # Reactivar modo idle
+
+        # Título de la página
+        - label:
+            align: TOP_MID
+            y: 15
+            text: "BLINDS"
+            text_font: roboto_med
+            text_color: color_accent
+
+        # ========================================
+        # LEFT COVER - Dinámico
+        # ========================================
+
+        # Left cover label (dinámico)
+        - label:
+            id: left_cover_label
+            x: 40
+            y: 55
+            align: TOP_LEFT
+            text: "KITCHEN"
+            text_font: roboto_reg
+            text_color: color_white
+
+        # Left cover status
+        - label:
+            id: left_cover_status
+            x: 40
+            y: 215
+            align: TOP_LEFT
+            text: "---"
+            text_font: roboto_reg
+            text_color: color_grey
+
+        # Left UP button
+        - button:
+            id: left_up_button
+            x: 20
+            y: 85
+            align: TOP_LEFT
+            width: 120
+            height: 40
+            bg_color: color_dark_grey
+            radius: 10
+            widgets:
+              - label:
+                  text: ${mdi_arrow_up}
+                  align: CENTER
+                  text_font: roboto_huge
+                  text_color: color_success
+            on_press:
+              - lambda: 'id(last_cover_button_press_time) = millis();'
+              - homeassistant.service:
+                  service: cover.open_cover
+                  data:
+                    entity_id: !lambda |-
+                      int current_idx = id(current_cover_pair_index);
+                      const char* cover = id(left_covers_array)[current_idx];
+                      ESP_LOGI("covers_page", "LEFT UP - par %d: %s", current_idx, cover);
+                      return cover;
+              - script.execute: cycle_covers_page  # RESTART THE CYCLE SCRIPT
+              - script.execute: play_beep
+
+        # Left STOP button
+        - button:
+            id: left_stop_button
+            x: 20
+            y: 128
+            align: TOP_LEFT
+            width: 120
+            height: 40
+            bg_color: color_dark_grey
+            radius: 10
+            widgets:
+              - label:
+                  text: ${mdi_stop}
+                  align: CENTER
+                  text_font: roboto_med
+                  text_color: color_warning
+            on_press:
+              - lambda: 'id(last_cover_button_press_time) = millis();'
+              - homeassistant.service:
+                  service: cover.stop_cover
+                  data:
+                    entity_id: !lambda |-
+                      int current_idx = id(current_cover_pair_index);
+                      const char* cover = id(left_covers_array)[current_idx];
+                      ESP_LOGI("covers_page", "LEFT STOP - par %d: %s", current_idx, cover);
+                      return cover;
+              - script.execute: cycle_covers_page  # RESTART THE CYCLE SCRIPT
+              - script.execute: play_beep
+
+        # Left DOWN button
+        - button:
+            id: left_down_button
+            x: 20
+            y: 173
+            align: TOP_LEFT
+            width: 120
+            height: 40
+            bg_color: color_dark_grey
+            radius: 10
+            widgets:
+              - label:
+                  text: ${mdi_arrow_down}
+                  align: CENTER
+                  text_font: roboto_huge
+                  text_color: color_heat
+            on_press:
+              - lambda: 'id(last_cover_button_press_time) = millis();'
+              - homeassistant.service:
+                  service: cover.close_cover
+                  data:
+                    entity_id: !lambda |-
+                      int current_idx = id(current_cover_pair_index);
+                      const char* cover = id(left_covers_array)[current_idx];
+                      ESP_LOGI("covers_page", "LEFT DOWN - par %d: %s", current_idx, cover);
+                      return cover;
+              - script.execute: cycle_covers_page  # RESTART THE CYCLE SCRIPT
+              - script.execute: play_beep
+
+        # Left status indicator
+        - obj:
+            id: left_cover_indicator
+            x: 5
+            y: 217
+            align: TOP_LEFT
+            width: 20
+            height: 20
+            radius: 10
+            bg_color: $button_off_color
+
+        # ========================================
+        # RIGHT COVER - Dinámico
+        # ========================================
+
+        # Right cover label (dinámico)
+        - label:
+            id: right_cover_label
+            x: -65
+            y: 55
+            align: TOP_RIGHT
+            text: "SALON"
+            text_font: roboto_reg
+            text_color: color_white
+
+        # Right cover status
+        - label:
+            id: right_cover_status
+            x: -65
+            y: 215
+            align: TOP_RIGHT
+            text: "---"
+            text_font: roboto_reg
+            text_color: color_grey
+
+        # Right UP button
+        - button:
+            id: right_up_button
+            x: -20
+            y: 85
+            align: TOP_RIGHT
+            width: 120
+            height: 40
+            bg_color: color_dark_grey
+            radius: 10
+            widgets:
+              - label:
+                  text: ${mdi_arrow_up}
+                  align: CENTER
+                  text_font: roboto_huge
+                  text_color: color_success
+            on_press:
+              - lambda: 'id(last_cover_button_press_time) = millis();'
+              - homeassistant.service:
+                  service: cover.open_cover
+                  data:
+                    entity_id: !lambda |-
+                      int current_idx = id(current_cover_pair_index);
+                      const char* cover = id(right_covers_array)[current_idx];
+                      ESP_LOGI("covers_page", "RIGHT UP - par %d: %s", current_idx, cover);
+                      return cover;
+              - script.execute: cycle_covers_page  # RESTART THE CYCLE SCRIPT
+              - script.execute: play_beep
+
+        # Right STOP button
+        - button:
+            id: right_stop_button
+            x: -20
+            y: 128
+            align: TOP_RIGHT
+            width: 120
+            height: 40
+            bg_color: color_dark_grey
+            radius: 10
+            widgets:
+              - label:
+                  text: ${mdi_stop}
+                  align: CENTER
+                  text_font: roboto_med
+                  text_color: color_warning
+            on_press:
+              - lambda: 'id(last_cover_button_press_time) = millis();'
+              - homeassistant.service:
+                  service: cover.stop_cover
+                  data:
+                    entity_id: !lambda |-
+                      int current_idx = id(current_cover_pair_index);
+                      const char* cover = id(right_covers_array)[current_idx];
+                      ESP_LOGI("covers_page", "RIGHT STOP - par %d: %s", current_idx, cover);
+                      return cover;
+              - script.execute: cycle_covers_page  # RESTART THE CYCLE SCRIPT
+              - script.execute: play_beep
+
+        # Right DOWN button
+        - button:
+            id: right_down_button
+            x: -20
+            y: 173
+            align: TOP_RIGHT
+            width: 120
+            height: 40
+            bg_color: color_dark_grey
+            radius: 10
+            widgets:
+              - label:
+                  text: ${mdi_arrow_down}
+                  align: CENTER
+                  text_font: roboto_huge
+                  text_color: color_heat
+            on_press:
+              - lambda: 'id(last_cover_button_press_time) = millis();'
+              - homeassistant.service:
+                  service: cover.close_cover
+                  data:
+                    entity_id: !lambda |-
+                      int current_idx = id(current_cover_pair_index);
+                      const char* cover = id(right_covers_array)[current_idx];
+                      ESP_LOGI("covers_page", "RIGHT DOWN - par %d: %s", current_idx, cover);
+                      return cover;
+              - script.execute: cycle_covers_page  # RESTART THE CYCLE SCRIPT
+              - script.execute: play_beep
+
+        # Right status indicator
+        - obj:
+            id: right_cover_indicator
+            x: -5
+            y: 217
+            align: TOP_RIGHT
+            width: 20
+            height: 20
+            radius: 10
+            bg_color: $button_off_color

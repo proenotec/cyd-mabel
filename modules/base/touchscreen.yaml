@@ -1,0 +1,4 @@
+---
+lvgl:
+  touchscreens:
+    - device_touchscreen

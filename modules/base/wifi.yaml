@@ -1,0 +1,42 @@
+---
+wifi:
+  networks:
+   - ssid: $wifi_ssid1
+     password: $wifi_password1
+   - ssid: $wifi_ssid2
+     password: $wifi_password2
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "$device_name"
+    password: $fallback_password
+
+  on_connect:
+    - lvgl.label.update:
+        id: ha_status_icon_label
+        text_color: color_white
+        text: ${mdi_wifi}
+    - logger.log: "WiFi connected - icon updated"
+
+  on_disconnect:
+    - lvgl.label.update:
+        id: ha_status_icon_label
+        text_color: color_warning
+        text: ${mdi_wifi_off}
+    - logger.log: "WiFi disconnected - icon updated"
+
+captive_portal:
+
+web_server:
+  port: 80
+  version: 3
+
+ota:
+  - platform: esphome
+    on_begin:
+      then:
+        - logger.log: "Starting OTA update"
+        - logger.log: "Pausing LVGL and turning off backlight"
+        - light.turn_off: display_backlight
+        - lvgl.pause:
+  - platform: web_server

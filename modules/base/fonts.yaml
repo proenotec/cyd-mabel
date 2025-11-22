@@ -1,0 +1,107 @@
+font:
+  - file: "gfonts://Roboto@400"  # Especifica explícitamente peso 400
+    glyphs: ' !0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ°.:/+-%—,;?()''"' # Added !, ", and other punctuation (note '' for literal ')
+    id: roboto_reg
+    size: 18
+    bpp: 4
+    extras:
+  # http://materialdesignicons.com/cdn/7.4.47/
+      - file: 'https://github.com/Templarian/MaterialDesign-Webfont/raw/v7.4.47/fonts/materialdesignicons-webfont.ttf'
+        glyphs:
+          - ${mdi_wifi}
+          - ${mdi_wifi_off}
+          - ${mdi_power}
+          - ${mdi_fire}
+
+  - file: "gfonts://Roboto@400"  # Especifica explícitamente peso 400
+    glyphs: ' !0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ°.:/+-%—,;?()''"' # Added !, ", and other punctuation (note '' for literal ')
+    id: roboto_med
+    size: 24
+    bpp: 4
+    extras:
+  # http://materialdesignicons.com/cdn/7.4.47/
+      - file: 'https://github.com/Templarian/MaterialDesign-Webfont/raw/v7.4.47/fonts/materialdesignicons-webfont.ttf'
+        glyphs:
+          - ${mdi_thermometer}
+          - ${mdi_chevron_up}
+          - ${mdi_chevron_down}
+          - ${mdi_plus}
+          - ${mdi_minus}
+          - ${mdi_power}
+          - ${mdi_fire}
+          - ${mdi_fire_off}
+          - ${mdi_home}
+          - ${mdi_lightbulb}
+          - ${mdi_lightbulb_on}
+          - ${mdi_lightbulb_off}
+          - ${mdi_stop}
+          - ${mdi_info}
+          - ${mdi_window}
+          - ${mdi_window_open}
+          - ${mdi_square}
+          - ${mdi_square_outline}
+
+  - file: "gfonts://Roboto@400"  # Especifica explícitamente peso 400
+    glyphs: ' -0123456789.°C'
+    id: roboto_huge
+    size: 50
+    bpp: 4
+    extras:
+  # http://materialdesignicons.com/cdn/7.4.47/
+      - file: 'https://github.com/Templarian/MaterialDesign-Webfont/raw/v7.4.47/fonts/materialdesignicons-webfont.ttf'
+        glyphs:
+          - ${mdi_lightbulb}
+          - ${mdi_lightbulb_on}
+          - ${mdi_lightbulb_off}
+          - ${mdi_arrow_up}
+          - ${mdi_arrow_down}
+          - ${mdi_blinds}
+          - ${mdi_blinds_open}
+
+  - file: "gfonts://Roboto"
+    id: roboto12
+    size: 12
+    bpp: 8
+
+  # http://materialdesignicons.com/cdn/7.4.47/
+  - file: 'https://github.com/Templarian/MaterialDesign-Webfont/raw/v7.4.47/fonts/materialdesignicons-webfont.ttf'
+    id: light12
+    size: 12
+    bpp: 8
+    glyphs: [
+      "\U000F0335",  # mdi-lightbulb
+      "\U000F0769",  # mdi-ceiling-light
+      "\U000F06B5",  # mdi-lamp
+      "\U000F08DD",  # mdi-floor-lamp
+      "\U000F12BA",  # mdi-string-lights
+      "\U000F0914",  # mdi-track-light
+      "\U000F1A2F",  # mdi-bulkhead_light:
+      "\U000F07D6",  # mdi-led-strip
+      "\U000F1020",  # mdi-coach-lamp
+      "\U000F1798",  # mdi-ceiling-fan-light
+      "\U000F02E3",  # mdi-bed
+      "\U000F05A8",  # mdi-white-balance-sunny
+      "\U000F00DF",  # mdi-brightness-6
+    ]
+
+#  # http://materialdesignicons.com/cdn/7.4.47/
+#  - file: 'https://github.com/Templarian/MaterialDesign-Webfont/raw/v7.4.47/fonts/materialdesignicons-webfont.ttf'
+#    id: light40
+#    size: 40
+#    bpp: 8
+#    glyphs: [
+#      "\U000F0335",  # mdi-lightbulb
+#      "\U000F0769",  # mdi-ceiling-light
+#      "\U000F06B5",  # mdi-lamp
+#      "\U000F08DD",  # mdi-floor-lamp
+#      "\U000F12BA",  # mdi-string-lights
+#      "\U000F0914",  # mdi-track-light
+#      "\U000F1A2F",  # mdi-bulkhead_light:
+#      "\U000F07D6",  # mdi-led-strip
+#      "\U000F1020",  # mdi-coach-lamp
+#      "\U000F1798",  # mdi-ceiling-fan-light
+#      "\U000F02E3",  # mdi-bed
+#      "\U000F05A8",  # mdi-white-balance-sunny
+#      "\U000F00DF",  # mdi-brightness-6
+#    ]
+

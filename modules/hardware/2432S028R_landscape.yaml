@@ -1,0 +1,151 @@
+# CYD
+# https://
+#
+# Hardware configuration file
+
+# esp32:
+#   board: esp32dev
+#   framework:
+#     type: esp-idf
+#     # Custom sdkconfig options
+#     # sdkconfig_options:
+#     #   CONFIG_COMPILER_OPTIMIZATION_SPEED: y
+#     #   CONFIG_GPIO_CTRL_FUNC_IN_IRAM: y
+#esp32:
+#  board: esp32dev
+#  # flash_size: 2MB # this line might not be needed for your specific board, but is for the Olimex ESP32-C6 I use
+#  framework:
+#    type: esp-idf
+#    # type: arduino
+#    # Fix flash size by ensuring IDF flash size is also set (was defaulting to 2MB?!?)
+#    # See https://github.com/esphome/issues/issues/5404
+#    sdkconfig_options:
+#      CONFIG_ESPTOOLPY_FLASHSIZE_4MB: y
+
+# Setup SPI for the display. The ESP32-2432S028R uses separate SPI buses for display and touch
+spi:
+  - id: spi_tft
+    clk_pin: GPIO14
+    mosi_pin: GPIO13
+    miso_pin:
+      number: GPIO12
+      ignore_strapping_warning: true
+  - id: touch_screen
+    clk_pin: GPIO25
+    mosi_pin: GPIO32
+    miso_pin: GPIO39
+
+# Setup a pin to control the display_backlight and the LED
+output:
+  - platform: ledc
+    id: backlight_pwm
+    pin:
+      number: GPIO21
+      #ignore_strapping_warning: true
+  - platform: ledc
+    id: output_red
+    pin: GPIO4
+    inverted: true
+  - platform: ledc
+    id: output_green
+    pin: GPIO16
+    inverted: true
+  - platform: ledc
+    id: output_blue
+    pin: GPIO17
+    inverted: true
+  #Buzzer
+  - platform: ledc
+    pin: GPIO26
+    id: buzzer_output
+
+# Buzzer
+rtttl:
+  output: buzzer_output
+  id: my_rtttl
+
+# id(my_rtttl).play("beep:d=4,o=5,b=100:16e6");
+#
+# Beep simple corto (actual):
+# "beep:d=4,o=5,b=100:16e6"
+#
+# Beep doble:
+# "beep:d=32,o=5,b=100:e6,p,e6"
+#
+# Tono más grave:
+# "beep:d=4,o=4,b=100:16c5"
+#
+# Beep más largo:
+# "beep:d=2,o=5,b=100:e6"
+#
+# Melodía de éxito (para mensajes importantes):
+# "success:d=4,o=5,b=100:c6,e6,g6"
+#
+# errores CRC:
+# // En caso de CRC inválido
+# id(my_rtttl).play("error:d=4,o=4,b=100:c5,c5");
+
+light:
+  - platform: monochromatic
+    id: display_backlight
+    name: Backlight
+    output: backlight_pwm
+    icon: mdi:brightness-percent
+    default_transition_length: 500ms
+    restore_mode: RESTORE_AND_ON
+    on_turn_on:
+      then:
+        - script.execute: turn_on_screen_light
+    on_turn_off:
+      then:
+        - lvgl.pause:
+
+  - platform: rgb
+    name: LED
+    red: output_red
+    id: led
+    green: output_green
+    blue: output_blue
+    restore_mode: ALWAYS_OFF
+
+# sensor:
+#   - platform: adc
+#     pin: 34
+#     name: "Brightness"
+#     update_interval: 60s
+
+display:
+  - platform: ili9xxx
+    id: device_display
+    model: ILI9342
+    spi_id: spi_tft
+    cs_pin:
+      number: GPIO15
+      ignore_strapping_warning: true
+    dc_pin:
+      number: GPIO2
+      ignore_strapping_warning: true
+    invert_colors: false
+    rotation: 180
+    auto_clear_enabled: false
+    update_interval: never
+
+# Pantalla táctil (XPT2046)
+touchscreen:
+  platform: xpt2046
+  spi_id: touch_screen
+  id: device_touchscreen
+  cs_pin: GPIO33
+  interrupt_pin: GPIO36
+  update_interval: 50ms
+  threshold: 400
+  calibration:
+    x_min: 200
+    x_max: 3900
+    y_min: 200
+    y_max: 3900
+  transform:
+    swap_xy: true
+  on_touch:
+    then:
+      - script.execute: turn_on_screen_light

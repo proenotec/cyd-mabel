@@ -1,0 +1,192 @@
+---
+# Boot Screen
+lvgl:
+  top_layer:
+    widgets:
+      - obj:
+          id: boot_screen
+          layout:
+            type: flex
+            flex_flow: COLUMN_WRAP
+          height: ${screen_height}
+          width: ${screen_width}
+          text_font: roboto12
+          scrollable: false
+          bg_color: white
+          bg_opa: COVER
+          radius: 0
+          pad_all: 2
+          widgets:
+            - image:
+                src: boot_logo_20px
+            - label:
+                id: esphome_version_label
+                text_color: black
+                text:
+                  format: "ESPHome Version: %s"
+                  args: [ 'id(esphome_version).state.c_str()' ]
+            - label:
+                text_color: black
+                text:
+                  format: "Build Date: %s - %s"
+                  args: [__DATE__, __TIME__]
+            - label:
+                text_color: black
+                id: connected_mac_label
+                text: "MAC Address: Not Connected"
+            - label:
+                text_color: black
+                id: ip_address_label
+                text: "IP Address: Not Connected"
+            - label:
+                text_color: black
+                id: connected_ssid_label
+                text: "Connected SSID: Not Connected"
+            - label:
+                text_color: black
+                id: wifi_signal_db_percent_label
+                text: "WiFi Strength: Not Connected"
+
+            # Spacer that grows to push buttons to bottom
+            - obj:
+               radius: 0
+               pad_all: 0
+               border_width: 0
+               bg_opa: TRANSP
+               width: ${screen_width}
+               flex_grow: 1
+
+            # Info page buttons container - hidden during boot
+            - obj:
+                id: info_buttons_container
+                hidden: true  # Hidden by default during boot
+                radius: 5
+                pad_all: 3
+                border_width: 1
+                border_color: 0x555555
+                width: 310
+                height: 48
+                bg_color: 0xF0F0F0
+                layout:
+                  type: flex
+                  flex_flow: ROW
+                  flex_align_main: SPACE_EVENLY
+                  flex_align_cross: CENTER
+                widgets:
+                  # Script Button 1
+                  - button:
+                      id: info_script_1
+                      radius: 6
+                      width: 70
+                      height: 38
+                      checkable: false
+                      bg_color: 0x4CAF50  # Green
+                      widgets:
+                        - label:
+                            text_color: white
+                            align: center
+                            text: "Rain"
+                            text_font: roboto_reg
+                      on_press:
+                        - homeassistant.service:
+                            service: script.turn_on
+                            data:
+                              entity_id: "script.rain_notification_for_the_day"  # Rain prediction
+                        - lambda: |-
+                            if (id(active_lvgl_page) == "info_page") {
+                              ESP_LOGI("boot_screen", "Pressed button 1. Returning from info page to main page");
+                            }
+                        - script.execute: hide_boot_screen_smart
+                        - script.execute: play_beep
+
+                  # Script Button 2
+                  - button:
+                      id: info_script_2
+                      radius: 6
+                      width: 90
+                      height: 38
+                      checkable: false
+                      bg_color: 0x2196F3  # Blue
+                      widgets:
+                        - label:
+                            text_color: white
+                            align: center
+                            text: "Script 2"
+                            text_font: roboto_reg
+                      on_press:
+                        - homeassistant.service:
+                            service: script.turn_on
+                            data:
+                              entity_id: "script.spare_script_2"  # Change this
+                        - lambda: |-
+                            if (id(active_lvgl_page) == "info_page") {
+                              ESP_LOGI("boot_screen", "Pressed button 2. Returning from info page to main page");
+                            }
+                        - script.execute: hide_boot_screen_smart
+                        - script.execute: play_beep
+
+                  # Script Button 3
+                  - button:
+                      id: info_script_3
+                      radius: 6
+                      width: 90
+                      height: 38
+                      checkable: false
+                      bg_color: 0xFF9800  # Orange
+                      widgets:
+                        - label:
+                            text_color: white
+                            align: center
+                            text: "Script 3"
+                            text_font: roboto_reg
+                      on_press:
+                        - homeassistant.service:
+                            service: script.turn_on
+                            data:
+                              entity_id: "script.spare_script_3"
+                        - lambda: |-
+                            if (id(active_lvgl_page) == "info_page") {
+                              ESP_LOGI("boot_screen", "Pressed button 3. Returning from info page to main page");
+                            }
+                        - script.execute: hide_boot_screen_smart
+                        - script.execute: play_beep
+
+            # OK button container at bottom
+            - obj:
+               radius: 0
+               pad_all: 3
+               border_width: 0
+               bg_opa: TRANSP
+               width: ${screen_width}
+               height: 55
+               layout:
+                 type: flex
+                 flex_flow: ROW
+                 flex_align_main: END
+                 flex_align_cross: CENTER
+               widgets:
+                 - button:
+                    id: boot_screen_ok_button
+                    radius: 12
+                    width: 75
+                    height: 45
+                    checkable: false
+                    widgets:
+                      - label:
+                          text_color: white
+                          align: center
+                          text: "OK"
+                    on_press:
+                      - lambda: |-
+                          if (id(active_lvgl_page) == "info_page") {
+                            ESP_LOGI("boot_screen", "Returning from info page to main page");
+                          }
+                      - script.execute: hide_boot_screen_smart
+                      - script.execute: play_beep
+
+image:
+  - file: modules/assets/logo-text-on-light.svg
+    id: boot_logo_20px
+    resize: 100x20  # aspect ratio 5
+    type: RGB565
+    transparency: alpha_channel

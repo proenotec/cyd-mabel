@@ -1,0 +1,22 @@
+---
+esphome:
+  on_boot:
+    priority: -100
+    then:
+      - script.execute: play_beep
+      - delay: $boot_screen_delay
+      - script.execute: hide_boot_screen
+
+#api:
+
+# Enable logging
+logger:
+  level: ${log_level}
+  #baud_rate: 0
+  logs:
+    wifi: INFO
+    sensor: INFO
+    component: WARN   # Avoid spam from internal components
+#    i2c.idf: info
+#    touchscreen: info
+#    scheduler: none
