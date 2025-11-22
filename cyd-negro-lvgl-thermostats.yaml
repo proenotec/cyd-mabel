@@ -1070,7 +1070,8 @@ script:
     then:
       - script.stop: show_info_screen  # Stop info screen timer if running
       - lvgl.widget.hide: boot_screen
-      - lvgl.widget.hide: info_buttons_container  # Hide the extra buttons
+      # NOTE: info_buttons_container disabled due to ESPHome package merge issues
+      # - lvgl.widget.hide: info_buttons_container  # Hide the extra buttons
       - lvgl.widget.show: date_time_label
       - lvgl.widget.show: ha_status_icon_label
       - lambda: |-
@@ -1102,7 +1103,8 @@ script:
           id(active_lvgl_page) = "info_page";
           ESP_LOGI("info_screen", "Showing info screen");
       - lvgl.widget.show: boot_screen
-      - lvgl.widget.show: info_buttons_container  # Show the extra buttons
+      # NOTE: info_buttons_container disabled due to ESPHome package merge issues
+      # - lvgl.widget.show: info_buttons_container  # Show the extra buttons
       - lvgl.widget.hide: date_time_label
       - lvgl.widget.hide: ha_status_icon_label
       - script.execute: play_beep
