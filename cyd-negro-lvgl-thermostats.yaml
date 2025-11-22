@@ -1,56 +1,132 @@
-# ESPHome configuration for Climate Control Display
-# Version: v1.0.0
-# Date: 2025-03-01
-# ESPHome Version 2025.2.1
-# WT32-SC01 PLUS
-# ZX3D50CE08S-v15-USRC 230228
-# 3.5 inch 320x480, driver ST7796UI, interface MCU8080 8Bit, color RGB565, ILI9488 controller
-# single touch capacitive FT6336U I2S
-# ESP32-S3 model ESP32-WROVER-B, WiFi + BT + BLE MCU module, 4MB SPI flash and 8MB PSRAM
-# https://www.marutsu.co.jp/contents/shop/marutsu/datasheet/khe_WT32-SC01-PLUS.pdf
-# https://esphome.io/components/touchscreen/ft63x6.html
-# https://www.esp32.com/viewtopic.php?t=39219
-# https://github.com/esphome/esphome/pull/8230 Implement i80 bus for ili9xxx displays
-# https://esphome.io/cookbook/lvgl.html
-# https://github.com/agillis/esphome-modular-lvgl-buttons/
+# ╔════════════════════════════════════════════════════════════════════════════╗
+# ║  ESPHome Climate Control Touchscreen - Configuration File                 ║
+# ║  Version: v2.0.0 - Reorganized for Easy Configuration                     ║
+# ║  Hardware: WT32-SC01 PLUS (ESP32-S3 with 3.5" 320x480 touchscreen)       ║
+# ╚════════════════════════════════════════════════════════════════════════════╝
+#
+# ESPHome Version: 2025.2.1
+# Display: 3.5" 320x480, ST7796UI driver, FT6336U capacitive touch
+# MCU: ESP32-S3 (ESP32-WROVER-B), 4MB flash + 8MB PSRAM
+#
+# Documentación:
+# - https://esphome.io/cookbook/lvgl.html
+# - https://github.com/agillis/esphome-modular-lvgl-buttons/
 
 substitutions:
-  ##################################################################
-  # CONFIG - Update values ONLY here
-
-  # <================================== Cambiar
+  # ╔══════════════════════════════════════════════════════════════════════════╗
+  # ║  SECCIÓN 1: IDENTIFICACIÓN DEL DISPOSITIVO                               ║
+  # ╚══════════════════════════════════════════════════════════════════════════╝
+  # Nombre único del dispositivo (sin espacios, solo letras, números y guiones)
   device_name: 'cyd-negro-lvgl-thermostats-new1'
+  # Nombre amigable que aparecerá en Home Assistant
   friendly_name: 'CYD negro LVGL Thermostats New1'
 
-  # Secrets and Passwords - Update values in secrets.yaml
+  # ╔══════════════════════════════════════════════════════════════════════════╗
+  # ║  SECCIÓN 2: SEGURIDAD Y CREDENCIALES                                     ║
+  # ╚══════════════════════════════════════════════════════════════════════════╝
+  # WiFi - Definir en secrets.yaml
   wifi_ssid1: !secret wifi_ssid_gvf
   wifi_password1: !secret wifi_password_gvf
   wifi_ssid2: !secret wifi_ssid_brasil
   wifi_password2: !secret wifi_password_brasil
   fallback_password: !secret fallback_password
-  # <==================================
 
+  # API - Clave de encriptación única por dispositivo
+  # Generar nueva con: openssl rand -base64 32
+  api_key: "6CnIQufPCOzLUm3ln+kwRJttPzkk+rKEVIDqVLOythY="
 
-    # Define logging level: NONE, ERROR, WARN, INFO, DEBUG (Default), VERBOSE, VERY_VERBOSE
-  log_level: "DEBUG"
-
-  climate_entity_salon: climate.salon
-  climate_entity_bathroom: climate.bathroom
-  climate_entity_bedroom: climate.dorm
-  climate_entity_pasillo: climate.pasillo
-
-  cover_kitchen: cover.zbblind2_kitchen
-  cover_salon: cover.zbblind3_salon
-  cover_main_bedroom: cover.zbblind5_mainbedroom
-  cover_julia_bedroom: cover.zbblind1_julia
-  cover_first_bedroom: cover.zbblind6_firstbedroom
-  cover_bathroom: cover.zbblind4_bathroom
-
+  # OTA - Contraseña para actualizaciones
   ota_password: "31d3d0777774a25672c0ddfd04f48ac5"
 
-  # <================================== Cambiar
-  api_key: "6CnIQufPCOzLUm3ln+kwRJttPzkk+rKEVIDqVLOythY="
-  # <==================================
+  # ╔══════════════════════════════════════════════════════════════════════════╗
+  # ║  SECCIÓN 3: CONFIGURACIÓN DE TERMOSTATOS                                 ║
+  # ╚══════════════════════════════════════════════════════════════════════════╝
+  #
+  # IMPORTANTE: Para añadir o quitar termostatos, actualizar TODAS estas secciones:
+  # 1. Definir entidades aquí (climate_entity_X)
+  # 2. Actualizar text_sensor (líneas 445-501): hvac_mode_X y hvac_action_X
+  # 3. Actualizar sensor (líneas 616-666): set_temperature_X y current_temperature_X
+  # 4. Actualizar globals (línea 316): initial_value del current_climate_entity
+  # 5. Actualizar script cycle_climate (líneas 1136-1167): arrays climate_entities[] y climate_labels[]
+  # 6. Actualizar script cycle_texto_page_climates (líneas 774-925): arrays y switch cases
+  # 7. Actualizar script update_climate_display (líneas 1057-1090): switch cases
+  # 8. Actualizar el número total: Buscar "num_climates = 4" y cambiar
+  #
+  # TERMOSTATO 0 - Nombre corto para display (máx 8 caracteres)
+  climate_entity_salon: climate.salon
+  climate_label_salon: "SALON"
+
+  # TERMOSTATO 1
+  climate_entity_bathroom: climate.bathroom
+  climate_label_bathroom: "BATHR."
+
+  # TERMOSTATO 2
+  climate_entity_bedroom: climate.dorm
+  climate_label_bedroom: "BEDR."
+
+  # TERMOSTATO 3
+  climate_entity_pasillo: climate.pasillo
+  climate_label_pasillo: "PASILLO"
+
+  # Para añadir más termostatos:
+  # 1. Descomentar y configurar las líneas siguientes
+  # 2. Seguir las instrucciones de "IMPORTANTE" arriba
+  #
+  # TERMOSTATO 4 (ejemplo - descomentary configurar)
+  # climate_entity_office: climate.office
+  # climate_label_office: "OFFICE"
+
+  # ╔══════════════════════════════════════════════════════════════════════════╗
+  # ║  SECCIÓN 4: CONFIGURACIÓN DE PERSIANAS/CORTINAS                          ║
+  # ╚══════════════════════════════════════════════════════════════════════════╝
+  #
+  # IMPORTANTE: Para añadir o quitar persianas, actualizar TODAS estas secciones:
+  # 1. Definir entidades aquí (cover_X)
+  # 2. Actualizar packages (líneas 164-205): cover_X_state para cada persiana
+  # 3. Actualizar globals (líneas 334-368): arrays left_covers_array, right_covers_array,
+  #    left_cover_labels, right_cover_labels
+  # 4. Actualizar script cycle_covers_page (línea 763): cambiar "% 3" al número de PARES
+  #
+  # Las persianas se muestran en PARES (izquierda y derecha) que se van ciclando.
+  # Organizar las persianas en pares según preferencia.
+  #
+  # PAR 0 - Izquierda
+  cover_kitchen: cover.zbblind2_kitchen
+  cover_kitchen_label: "KITCHEN"
+  # PAR 0 - Derecha
+  cover_salon: cover.zbblind3_salon
+  cover_salon_label: "SALON"
+
+  # PAR 1 - Izquierda
+  cover_main_bedroom: cover.zbblind5_mainbedroom
+  cover_main_bedroom_label: "MAIN BED"
+  # PAR 1 - Derecha
+  cover_julia_bedroom: cover.zbblind1_julia
+  cover_julia_bedroom_label: "JULIA"
+
+  # PAR 2 - Izquierda
+  cover_first_bedroom: cover.zbblind6_firstbedroom
+  cover_first_bedroom_label: "1ST BED"
+  # PAR 2 - Derecha
+  cover_bathroom: cover.zbblind4_bathroom
+  cover_bathroom_label: "BATHRM"
+
+  # Para añadir otro par de persianas (PAR 3 ejemplo):
+  # 1. Descomentar y configurar
+  # 2. Seguir instrucciones de "IMPORTANTE" arriba
+  #
+  # PAR 3 - Izquierda (ejemplo)
+  # cover_garage: cover.zbblind7_garage
+  # cover_garage_label: "GARAGE"
+  # PAR 3 - Derecha (ejemplo)
+  # cover_terrace: cover.zbblind8_terrace
+  # cover_terrace_label: "TERRACE"
+
+  # ╔══════════════════════════════════════════════════════════════════════════╗
+  # ║  SECCIÓN 5: CONFIGURACIÓN GENERAL DEL SISTEMA                            ║
+  # ╚══════════════════════════════════════════════════════════════════════════╝
+  # Nivel de logging: NONE, ERROR, WARN, INFO, DEBUG, VERBOSE, VERY_VERBOSE
+  log_level: "DEBUG"
 
   ##################################################################
   # Material Design Icons
@@ -330,9 +406,25 @@ globals:
     restore_value: false
     initial_value: '"main_page"'  # Can be: main_page, texto_page, lights_page, covers_page, info_page
 
-  # Arrays de covers para reutilizar
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Arrays de persianas para el sistema de ciclado dinámico
+  # ═══════════════════════════════════════════════════════════════════════════
+  # IMPORTANTE: Al añadir/quitar persianas, actualizar estos 4 arrays:
+  # - Mantener el mismo número de elementos en todos los arrays
+  # - left_covers_array y left_cover_labels deben coincidir (mismo índice)
+  # - right_covers_array y right_cover_labels deben coincidir (mismo índice)
+  # - Cada índice representa un PAR de persianas (izq + der)
+  # - Actualizar también el cambio "% 3" al número correcto de pares en cycle_covers_page
+  #
+  # Ejemplo para 3 PARES (6 persianas total):
+  # - Índice 0: PAR 0 (Kitchen + Salon)
+  # - Índice 1: PAR 1 (Main Bedroom + Julia)
+  # - Índice 2: PAR 2 (First Bedroom + Bathroom)
+  #
+  # Para añadir PAR 3, añadir elemento en índice 3 en cada array y cambiar [3] a [4]
+
   - id: left_covers_array
-    type: const char*[3]
+    type: const char*[3]  # ← CAMBIAR [3] al número de PARES si añades/quitas
     restore_value: false
     initial_value: '{
       "${cover_kitchen}",
@@ -341,7 +433,7 @@ globals:
     }'
 
   - id: right_covers_array
-    type: const char*[3]
+    type: const char*[3]  # ← CAMBIAR [3] al número de PARES si añades/quitas
     restore_value: false
     initial_value: '{
       "${cover_salon}",
@@ -350,21 +442,21 @@ globals:
     }'
 
   - id: left_cover_labels
-    type: const char*[3]
+    type: const char*[3]  # ← CAMBIAR [3] al número de PARES si añades/quitas
     restore_value: false
     initial_value: '{
-      "KITCHEN",
-      "MAIN BED",
-      "1ST BED"
+      "${cover_kitchen_label}",
+      "${cover_main_bedroom_label}",
+      "${cover_first_bedroom_label}"
     }'
 
   - id: right_cover_labels
-    type: const char*[3]
+    type: const char*[3]  # ← CAMBIAR [3] al número de PARES si añades/quitas
     restore_value: false
     initial_value: '{
-      "SALON",
-      "JULIA",
-      "BATHRM"
+      "${cover_salon_label}",
+      "${cover_julia_bedroom_label}",
+      "${cover_bathroom_label}"
     }'
 
 text_sensor:
@@ -709,7 +801,13 @@ script:
       - lambda: |-
           ESP_LOGI("clear_texto", "Limpieza completada y reconocida");
 
+  # ═══════════════════════════════════════════════════════════════════════════
   # Script para ciclar pares de persianas en covers_page
+  # ═══════════════════════════════════════════════════════════════════════════
+  # IMPORTANTE: Al añadir/quitar pares de persianas:
+  # 1. Actualizar los arrays en globals: left_covers_array, right_covers_array, etc.
+  # 2. Cambiar "% 3" más abajo al número correcto de PARES
+  # 3. El sistema cicla automáticamente entre pares cada 5s (o 30s si hay interacción reciente)
   - id: cycle_covers_page
     mode: restart
     then:
@@ -717,7 +815,7 @@ script:
           condition:
             lambda: 'return id(active_lvgl_page) == "covers_page";'
           then:
-            # Variable delay based on recent interaction
+            # Delay variable basado en interacción reciente
             - delay: !lambda |-
                 static uint32_t last_stop_press_time = 0;
                 uint32_t current_time = millis();
@@ -760,9 +858,15 @@ script:
                       int idx = id(current_cover_pair_index);
                       ESP_LOGI("covers_cycle", "Mostrando par %d", idx);
                       // Avanzar al siguiente par
-                      id(current_cover_pair_index) = (idx + 1) % 3;
+                      id(current_cover_pair_index) = (idx + 1) % 3;  // ← CAMBIAR "% 3" al número de PARES
 
-  # Script para ciclar climates en texto_page
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Script para ciclar información de clima en texto_page
+  # ═══════════════════════════════════════════════════════════════════════════
+  # IMPORTANTE: Al añadir/quitar termostatos:
+  # 1. Actualizar el array climate_labels[] con las mismas etiquetas que en cycle_climate
+  # 2. Añadir un case en el switch para cada termostato (case 0, 1, 2, 3...)
+  # 3. Cambiar "% 6" al final por el número total de displays (normalmente termostatos + 2)
   - id: cycle_texto_page_climates
     mode: restart
     then:
@@ -771,11 +875,21 @@ script:
             lambda: 'return id(active_lvgl_page) == "texto_page";'
           then:
             - lambda: |-
-                // Arrays con la información de los climates
-                static const char* climate_labels[] = {"SALON", "BATHR.", "BEDR.", "PASILLO", "ACS", "OTHER", "OTHER2"};
-                static const char* window_icons[] = {"\U000F11DB", "\U000F11DC"};
-                static const char* heating_icons[] = {"\U000F1722", "\U000F0238"};
-                static const char* square_icons[] = {"\U000F0763", "\U000F0764"};
+                // ═════════════════════════════════════════════════════════════════
+                // Arrays de información de clima - ACTUALIZAR al añadir/quitar
+                // ═════════════════════════════════════════════════════════════════
+                static const char* climate_labels[] = {
+                  "${climate_label_salon}",     // 0: Termostato Salon
+                  "${climate_label_bathroom}",  // 1: Termostato Bathroom
+                  "${climate_label_bedroom}",   // 2: Termostato Bedroom
+                  "${climate_label_pasillo}",   // 3: Termostato Pasillo
+                  "ACS",                        // 4: Sistema ACS (fijo)
+                  "OTHER",                      // 5: Otra info (fijo)
+                  "OTHER2"                      // 6: Otra info 2 (fijo)
+                };
+                static const char* window_icons[] = {"\U000F11DB", "\U000F11DC"};  // Ventana cerrada/abierta
+                static const char* heating_icons[] = {"\U000F1722", "\U000F0238"}; // Fuego off/on
+                static const char* square_icons[] = {"\U000F0763", "\U000F0764"};  // Cuadrado vacío/lleno
 
                 int idx = id(texto_page_climate_index);
 
@@ -785,37 +899,40 @@ script:
                 bool window_state;
                 //bool heat_state;
 
-                // Obtener datos según el índice actual
+                // ═════════════════════════════════════════════════════════════════
+                // Switch cases - ACTUALIZAR al añadir/quitar termostatos
+                // Añadir un case para cada termostato en el mismo orden del array
+                // ═════════════════════════════════════════════════════════════════
                 switch(idx) {
-                  case 0: // Salon
+                  case 0: // TERMOSTATO 0: Salon
                     current_temp = id(current_temperature_salon).state;
                     set_temp = id(set_temperature_salon).state;
                     hvac_action = id(hvac_action_salon).state;
                     window_state = id(salon_windows).state;
                     //heat_state = id(salon_climate_switch).state;
                     break;
-                  case 1: // Bathroom
+                  case 1: // TERMOSTATO 1: Bathroom
                     current_temp = id(current_temperature_bathroom).state;
                     set_temp = id(set_temperature_bathroom).state;
                     hvac_action = id(hvac_action_bathroom).state;
                     window_state = id(bathroom_window).state;
                     //heat_state = id(bathroom_switch).state;
                     break;
-                  case 2: // Bedroom
+                  case 2: // TERMOSTATO 2: Bedroom
                     current_temp = id(current_temperature_bedroom).state;
                     set_temp = id(set_temperature_bedroom).state;
                     hvac_action = id(hvac_action_bedroom).state;
                     window_state = id(maindorm_window).state;
                     //heat_state = id(bedroom_switch).state;
                     break;
-                  case 3: // Pasillo
+                  case 3: // TERMOSTATO 3: Pasillo
                     current_temp = id(current_temperature_pasillo).state;
                     set_temp = id(set_temperature_pasillo).state;
                     hvac_action = id(hvac_action_pasillo).state;
                     window_state = id(maindoor_status).state;
                     //heat_state = id(pasillo_switch).state;
                     break;
-                  case 4: // ACS
+                  case 4: // INFO EXTRA: ACS (Sistema de agua caliente)
                     window_state = id(acs_on).state;
                     break;
                 }
@@ -1041,21 +1158,28 @@ script:
                 ESP_LOGI("idle_timeout", "Volviendo a main_page por timeout");
             - script.execute: idle_cycle_thermostats
 
-# Update UI with current climate data
+# ═══════════════════════════════════════════════════════════════════════════
+  # Script para actualizar la UI con datos del termostato actual
+  # ═══════════════════════════════════════════════════════════════════════════
+  # IMPORTANTE: Al añadir/quitar termostatos:
+  # 1. Añadir un case en el switch para cada termostato (case 0, 1, 2, 3...)
+  # 2. Cada case debe leer: hvac_mode, hvac_action, set_temp, current_temp del sensor correspondiente
   - id: update_climate_display
     then:
       - lambda: |-
           int idx = id(current_climate_index);
 
-          // Declare variables first
+          // Declarar variables primero
           std::string hvac_mode;
           std::string hvac_action;
           float set_temp = NAN;
           float current_temp = NAN;
 
-          // Get data based on current climate index
+          // ═════════════════════════════════════════════════════════════════
+          // Switch cases - ACTUALIZAR al añadir/quitar termostatos
+          // ═════════════════════════════════════════════════════════════════
           switch(idx) {
-            case 0: // Salon
+            case 0: // TERMOSTATO 0: Salon
               hvac_mode = id(hvac_mode_salon).state;
               hvac_action = id(hvac_action_salon).state;
               set_temp = id(set_temperature_salon).state;
@@ -1063,7 +1187,7 @@ script:
               ESP_LOGD("update_climate", "Salon - mode='%s', action='%s', has_state=%d",
                        hvac_mode.c_str(), hvac_action.c_str(), id(hvac_action_salon).has_state());
               break;
-            case 1: // Bathroom
+            case 1: // TERMOSTATO 1: Bathroom
               hvac_mode = id(hvac_mode_bathroom).state;
               hvac_action = id(hvac_action_bathroom).state;
               set_temp = id(set_temperature_bathroom).state;
@@ -1071,7 +1195,7 @@ script:
               ESP_LOGD("update_climate", "Bathroom - mode='%s', action='%s', has_state=%d",
                        hvac_mode.c_str(), hvac_action.c_str(), id(hvac_action_bathroom).has_state());
               break;
-            case 2: // Bedroom
+            case 2: // TERMOSTATO 2: Bedroom
               hvac_mode = id(hvac_mode_bedroom).state;
               hvac_action = id(hvac_action_bedroom).state;
               set_temp = id(set_temperature_bedroom).state;
@@ -1079,7 +1203,7 @@ script:
               ESP_LOGD("update_climate", "Bedroom - mode='%s', action='%s', has_state=%d",
                        hvac_mode.c_str(), hvac_action.c_str(), id(hvac_action_bedroom).has_state());
               break;
-            case 3: // Pasillo
+            case 3: // TERMOSTATO 3: Pasillo
               hvac_mode = id(hvac_mode_pasillo).state;
               hvac_action = id(hvac_action_pasillo).state;
               set_temp = id(set_temperature_pasillo).state;
@@ -1126,27 +1250,35 @@ script:
             lv_label_set_text(id(current_temp_label), buf);
           }
 
-# Modificar el script cycle_climate para incluir detección de texto:
+# ═══════════════════════════════════════════════════════════════════════════
+  # Script para ciclar entre termostatos (usado en main_page y modo idle)
+  # ═══════════════════════════════════════════════════════════════════════════
+  # IMPORTANTE: Al añadir/quitar termostatos:
+  # 1. Añadir entidades y labels en los arrays de abajo
+  # 2. Cambiar "const int num_climates" al número total de termostatos
+  # 3. Los arrays deben estar en el MISMO ORDEN que en substitutions (0, 1, 2, 3...)
   - id: cycle_climate
     parameters:
       direction: string
     then:
       - lambda: |-
-          // Define climate entities and their labels
+          // ═════════════════════════════════════════════════════════════════
+          // Arrays de termostatos - ACTUALIZAR al añadir/quitar termostatos
+          // ═════════════════════════════════════════════════════════════════
           static const char* climate_entities[] = {
-            "${climate_entity_salon}",
-            "${climate_entity_bathroom}",
-            "${climate_entity_bedroom}",
-            "${climate_entity_pasillo}"
+            "${climate_entity_salon}",      // TERMOSTATO 0
+            "${climate_entity_bathroom}",   // TERMOSTATO 1
+            "${climate_entity_bedroom}",    // TERMOSTATO 2
+            "${climate_entity_pasillo}"     // TERMOSTATO 3
           };
           static const char* climate_labels[] = {
-            "SALON",
-            "BATHR.",
-            "BEDR.",
-            "PASILLO"
+            "${climate_label_salon}",       // TERMOSTATO 0
+            "${climate_label_bathroom}",    // TERMOSTATO 1
+            "${climate_label_bedroom}",     // TERMOSTATO 2
+            "${climate_label_pasillo}"      // TERMOSTATO 3
           };
 
-          const int num_climates = 4;
+          const int num_climates = 4;  // ← CAMBIAR al número total de termostatos
 
           // Update index based on direction
           if (direction == "next") {

@@ -8,6 +8,66 @@ This is an ESPHome configuration for a climate control touchscreen display runni
 
 **Hardware**: ESP32-S3 with 3.5" 320x480 touchscreen (ST7796UI driver, FT6336U capacitive touch)
 
+**Version**: v2.0.0 - Reorganized for easy configuration with flexible number of thermostats and covers
+
+## 📖 Configuration Organization (v2.0.0)
+
+The configuration file has been reorganized for maximum clarity and ease of modification:
+
+### Structure of Main Configuration File
+
+All user-configurable settings are at the **TOP** of `cyd-negro-lvgl-thermostats.yaml` in clearly marked sections:
+
+1. **SECCIÓN 1**: Device identification (name, friendly_name)
+2. **SECCIÓN 2**: Security and credentials (WiFi, API key, OTA password)
+3. **SECCIÓN 3**: Thermostat configuration (supports N thermostats)
+4. **SECCIÓN 4**: Cover/blind configuration (supports Z covers organized in pairs)
+5. **SECCIÓN 5**: General system settings (logging level, etc.)
+
+### Adding/Removing Thermostats
+
+The system now supports a flexible number of thermostats. Each section that needs updating has **inline comments** indicating:
+- What needs to be changed
+- Which line numbers to look at
+- Examples of what to add
+
+**Key sections to update** (all clearly marked with `# IMPORTANTE:` comments):
+- Line ~55-77: Define entities in `substitutions`
+- Line ~520-580: Add `text_sensor` for HVAC mode/action
+- Line ~690-740: Add `sensor` for temperatures
+- Line ~1228-1249: Update arrays in `cycle_climate` script
+- Line ~864-932: Update `cycle_texto_page_climates` script
+- Line ~1161-1207: Update `update_climate_display` script
+
+### Adding/Removing Covers
+
+Covers are organized in **PAIRS** (left + right) that cycle automatically:
+- Line ~94-123: Define cover entities and labels in `substitutions`
+- Line ~164-205: Add cover state sensors in `packages`
+- Line ~426-460: Update 4 arrays in `globals` (entities and labels for left/right)
+- Line ~861: Change `% 3` to number of pairs
+
+### Visual Indicators in Code
+
+All critical sections are marked with:
+```yaml
+# ═══════════════════════════════════════════════════════════════════════════
+# Section Title with Visual Separator
+# ═══════════════════════════════════════════════════════════════════════════
+# IMPORTANTE: Instructions on what to update
+```
+
+**→** Use symbols like `←` to indicate values that commonly need changing:
+```yaml
+const int num_climates = 4;  // ← CAMBIAR al número total de termostatos
+```
+
+## 📚 Documentation Files
+
+- **README.md**: User-facing documentation with step-by-step guides
+- **CLAUDE.md**: This file - developer/AI assistant guidance
+- **cyd-negro-lvgl-thermostats.yaml**: Main config with inline documentation
+
 ## Build and Development Commands
 
 ### Compile and Upload
